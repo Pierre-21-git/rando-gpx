@@ -8,6 +8,8 @@ import android.content.ServiceConnection
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.IBinder
+import android.os.PowerManager
+import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
@@ -22,7 +24,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tonapp.rando.R
 import com.tonapp.rando.RandoApplication
@@ -78,6 +83,48 @@ fun RecordingScreen(
             }
             permissionLauncher.launch(permissions.toTypedArray())
         }
+    }
+
+    // Suivi en arrière-plan (écran éteint / app en tâche de fond) : sur Android 10+,
+    // c'est une permission distincte qu'il faut demander séparément de la localisation
+    // "en cours d'utilisation", après coup et avec une justification claire — la demander
+    // en même temps que le reste est refusé silencieusement par le système sur beaucoup
+    // d'appareils. Optionnelle : l'app reste utilisable au premier plan sans elle.
+    var hasBackgroundLocationPermission by remember {
+        mutableStateOf(
+            Build.VERSION.SDK_INT < Build.VERSION_CODES.Q ||
+                ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_BACKGROUND_LOCATION) ==
+                    PackageManager.PERMISSION_GRANTED
+        )
+    }
+    val backgroundPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted -> hasBackgroundLocationPermission = granted }
+
+    // Optimisation batterie : sur de nombreux OEM (Xiaomi, Huawei...), le Foreground
+    // Service peut être tué malgré tout si l'app n'est pas exemptée. On ne peut que
+    // rediriger vers les réglages système (aucune permission spéciale requise pour
+    // ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS, contrairement à la demande directe).
+    val powerManager = remember { context.getSystemService(Context.POWER_SERVICE) as PowerManager }
+    var isIgnoringBatteryOptimizations by remember {
+        mutableStateOf(powerManager.isIgnoringBatteryOptimizations(context.packageName))
+    }
+
+    // Ces deux réglages ne se demandent pas via un dialogue applicatif classique mais en
+    // renvoyant l'utilisateur vers les paramètres système : on ne peut donc connaître le
+    // résultat qu'en revérifiant à chaque retour au premier plan de l'écran.
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                hasBackgroundLocationPermission = Build.VERSION.SDK_INT < Build.VERSION_CODES.Q ||
+                    ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_BACKGROUND_LOCATION) ==
+                        PackageManager.PERMISSION_GRANTED
+                isIgnoringBatteryOptimizations = powerManager.isIgnoringBatteryOptimizations(context.packageName)
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
     // Liaison (bind) au Foreground Service, une fois la permission de localisation acquise.
@@ -149,6 +196,13 @@ fun RecordingScreen(
                         else -> "Actif"
                     }
                 )
+                StatColumn(
+                    label = "Vitesse",
+                    value = trackingState.lastLocation
+                        ?.takeIf { it.hasSpeed() }
+                        ?.let { "%.1f km/h".format(Locale.getDefault(), it.speed * 3.6f) }
+                        ?: "--"
+                )
             }
 
             if (!hasLocationPermission) {
@@ -156,6 +210,28 @@ fun RecordingScreen(
                     "Autorisation de localisation requise pour enregistrer une randonnée.",
                     color = MaterialTheme.colorScheme.error,
                     modifier = Modifier.padding(horizontal = 16.dp)
+                )
+            }
+
+            // --- Conseils optionnels : n'empêchent pas d'enregistrer, mais fiabilisent
+            // le suivi écran éteint / longue durée en tâche de fond. ---
+            if (hasLocationPermission && !hasBackgroundLocationPermission) {
+                AdviceRow(
+                    text = "Pour continuer le suivi une fois l'écran éteint, autorisez la localisation \"en permanence\".",
+                    actionLabel = "Activer",
+                    onAction = { backgroundPermissionLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION) }
+                )
+            }
+            if (!isIgnoringBatteryOptimizations) {
+                AdviceRow(
+                    text = "Certains téléphones interrompent le suivi GPS pour économiser la batterie. " +
+                        "Désactivez l'optimisation batterie pour cette app afin d'éviter les coupures.",
+                    actionLabel = "Régler",
+                    onAction = {
+                        context.startActivity(
+                            Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
+                        )
+                    }
                 )
             }
 
@@ -208,6 +284,18 @@ fun RecordingScreen(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun AdviceRow(text: String, actionLabel: String, onAction: () -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(text, style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f))
+        Spacer(Modifier.width(8.dp))
+        TextButton(onClick = onAction) { Text(actionLabel) }
     }
 }
 

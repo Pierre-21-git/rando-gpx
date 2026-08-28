@@ -2,9 +2,11 @@
 
 Ce projet a été généré à partir de la spécification définie en amont (voir
 `specification-app-rando.md`), puis **compilé, corrigé et testé de bout en bout
-sur émulateur Android 15 (API 35)**. Le flow complet (permissions runtime,
-start/pause/resume/stop, tracé live, correction EGM96, export GPX, sélection de
-zone offline) a été validé manuellement.
+sur émulateur Android 15 (API 35) et sur un Motorola Moto G84 5G réel** (l'un
+des deux téléphones de référence de la spec). Le flow complet (permissions
+runtime, start/pause/resume/stop, tracé live, correction EGM96, export GPX,
+sélection de zone offline, permission arrière-plan, exemption batterie) a été
+validé manuellement sur les deux.
 
 ## Pour démarrer
 
@@ -36,6 +38,17 @@ zone offline) a été validé manuellement.
   hors-ligne (`OfflineAreaScreen`) avec estimation du nombre de tuiles
 - **3 écrans Compose** : Historique, Enregistrement (carte live), Détail (stats +
   graphique d'élévation MPAndroidChart), plus l'écran Carte hors ligne
+- **Vitesse instantanée** affichée en direct sur l'écran d'enregistrement (en plus
+  de la vitesse moyenne, calculée a posteriori sur l'écran Détail)
+- **Permission de localisation en arrière-plan** (`ACCESS_BACKGROUND_LOCATION`,
+  Android 10+) demandée séparément de la localisation au premier plan, avec un
+  bandeau explicatif optionnel — l'app reste utilisable sans, mais le suivi
+  s'interrompra si l'écran s'éteint sans cette permission
+- **Aide à la désactivation de l'optimisation batterie** : bandeau redirigeant
+  vers les réglages système si l'app n'est pas exemptée (nécessaire sur
+  certains OEM pour ne pas voir le Foreground Service tué en tâche de fond)
+- **Icône adaptative** (`ic_launcher_background`/`_foreground`) reprenant la
+  palette de l'app, au lieu du placeholder plat initial
 
 ## Historique des corrections notables (session de mise au point)
 
@@ -51,19 +64,19 @@ zone offline) a été validé manuellement.
 - **Bug de formatage GPX** : `String.format` sans `Locale` explicite produisait des
   décimales à virgule sur un téléphone en français (`987,4` au lieu de `987.4`),
   ce qui aurait généré un fichier GPX invalide — détecté par les tests unitaires.
+- **Notification figée à `00:00:00` sans fix GPS** : la notification n'était mise
+  à jour que depuis `onLocationChanged`, jamais appelé sans fix (immeuble,
+  sous-bois...) — repéré en testant à l'intérieur sur le Moto G84 réel. Corrigé
+  par un ticker périodique (1s) indépendant des remontées GPS.
 
 ## Pistes restantes (non bloquantes)
 
-- **Icône de l'app** : `drawable/ic_launcher.xml` est un placeholder minimal à
-  remplacer par un vrai design (adaptive icon recommandé pour le Play
-  Store/F-Droid).
-- **Vérifier le comportement batterie** : sur certains OEM (Xiaomi, Huawei...),
-  les Foreground Service sont tués malgré tout par des surcouches agressives —
-  prévoir un message d'aide utilisateur pour désactiver l'optimisation batterie.
-- **`ACCESS_BACKGROUND_LOCATION`** : la demande de permission actuelle ne couvre
-  que la localisation au premier plan ; une demande séparée pour l'arrière-plan
-  (nécessaire pour un tracking fiable écran éteint) reste à ajouter avec le
-  dialogue dédié Android 10+.
+- **Téléchargement offline réel** : l'estimation du nombre de tuiles a été
+  testée (`OfflineAreaScreen`), mais pas le téléchargement effectif (nécessite
+  une session réseau plus longue vers OpenTopoMap).
+- **Tests F-Droid** : pas de métadonnées `fastlane` (description, captures
+  d'écran) ni de configuration de build reproductible pour la soumission à
+  `fdroiddata`.
 
 ## Contraintes F-Droid respectées
 

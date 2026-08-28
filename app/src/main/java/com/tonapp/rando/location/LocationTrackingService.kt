@@ -22,10 +22,13 @@ import com.tonapp.rando.data.TrackPoint
 import java.util.Locale
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -53,6 +56,7 @@ class LocationTrackingService : Service() {
     private var recordingStartTime: Long = 0L
     private var cumulativeDistanceMeters = 0.0
     private var lastAcceptedLatLon: Pair<Double, Double>? = null
+    private var notificationTickerJob: Job? = null
 
     private val _state = MutableStateFlow(TrackingState())
     val state: StateFlow<TrackingState> = _state
@@ -100,6 +104,18 @@ class LocationTrackingService : Service() {
             _state.update { it.copy(isRecording = true, isPaused = false, pointCount = 0, hikeId = hikeId) }
             requestLocationUpdates()
         }
+
+        // La notification doit afficher une durée "temps réel" même sans fix GPS (immeuble,
+        // sous-bois, démarrage à l'intérieur...) : on ne peut pas se contenter de la mettre
+        // à jour uniquement depuis onLocationChanged, qui peut ne jamais être appelé pendant
+        // un moment.
+        notificationTickerJob?.cancel()
+        notificationTickerJob = scope.launch {
+            while (isActive) {
+                updateNotification()
+                delay(1_000L)
+            }
+        }
     }
 
     fun pauseRecording() {
@@ -116,6 +132,8 @@ class LocationTrackingService : Service() {
     fun stopRecording(onFinished: (hikeId: Long) -> Unit) {
         locationManager.removeUpdates(locationListener)
         barometerHelper?.stop()
+        notificationTickerJob?.cancel()
+        notificationTickerJob = null
         val hikeId = currentHikeId ?: return
         scope.launch {
             repository.finalizeHike(hikeId, System.currentTimeMillis())
