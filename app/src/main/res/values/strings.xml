@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Rando GPX</string>
+    <string name="notification_channel_name">Enregistrement de randonnée</string>
+    <string name="notification_recording_title">Randonnée en cours</string>
+    <string name="action_start">Démarrer</string>
+    <string name="action_pause">Pause</string>
+    <string name="action_resume">Reprendre</string>
+    <string name="action_stop">Arrêter</string>
+    <string name="action_export_gpx">Exporter en GPX</string>
+    <string name="screen_history">Historique</string>
+    <string name="screen_recording">Enregistrement</string>
+    <string name="screen_detail">Détail de la randonnée</string>
+</resources>
