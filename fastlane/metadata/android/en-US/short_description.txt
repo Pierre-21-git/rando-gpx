@@ -1,0 +1,1 @@
+Record your hikes and export them as GPX, no Google Play Services required.

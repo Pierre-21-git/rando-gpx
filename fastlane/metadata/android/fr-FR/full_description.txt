@@ -1,0 +1,16 @@
+Rando GPX est une application simple d'enregistrement de randonnées, sans dépendance à Google Play Services.
+
+Fonctionnalités principales :
+
+* Enregistrement GPS en arrière-plan (écran éteint) via un service au premier plan, avec notification affichant distance et durée en direct
+* Tracé en direct sur une carte (fonds OpenTopoMap, adaptés à la randonnée)
+* Correction d'altitude par géoïde EGM96, pour un dénivelé plus fidèle que l'altitude GPS brute
+* Export au format GPX 1.1 standard, réutilisable dans n'importe quel autre outil de randonnée
+* Historique des randonnées avec statistiques détaillées : distance, dénivelé positif/négatif, vitesse moyenne et maximale, altitude minimale et maximale, durée
+* Visualisation du tracé complet sur une carte et profil d'élévation pour chaque randonnée
+* Sélection d'une zone de carte à rendre disponible hors ligne
+* Interface disponible en français et en anglais (sélection automatique selon la langue du téléphone)
+
+Aucune télémétrie, aucun tracker, aucune dépendance non libre. Localisation assurée par l'API Android standard (LocationManager), pas par les services de localisation Google.
+
+Licence : GNU GPL v3 ou ultérieure.

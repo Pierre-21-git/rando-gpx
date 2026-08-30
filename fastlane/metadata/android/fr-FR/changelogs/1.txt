@@ -1,0 +1,1 @@
+Première version : enregistrement GPS en arrière-plan, correction d'altitude EGM96, export GPX, carte hors ligne, historique avec statistiques et carte du parcours.

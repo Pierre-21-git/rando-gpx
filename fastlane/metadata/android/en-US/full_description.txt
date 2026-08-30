@@ -1,0 +1,15 @@
+Rando GPX is a simple hike-recording app with no dependency on Google Play Services.
+
+Main features:
+
+* Background GPS recording (screen off) via a foreground service, with a notification showing live distance and duration
+* Live track drawn on a map (OpenTopoMap tiles, suited to hiking)
+* Altitude correction using the EGM96 geoid, for elevation gain/loss more accurate than raw GPS altitude
+* Export to the standard GPX 1.1 format, reusable in any other hiking tool
+* Hike history with detailed statistics: distance, elevation gain/loss, average and maximum speed, minimum and maximum altitude, duration
+* Full route map and elevation profile for each recorded hike
+* Selection of a map area to make available offline
+
+No telemetry, no trackers, no non-free dependencies. Location is provided by the standard Android API (LocationManager), not Google's location services.
+
+License: GNU GPL v3 or later.

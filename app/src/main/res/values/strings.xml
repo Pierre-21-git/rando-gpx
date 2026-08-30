@@ -1,14 +1,104 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Rando GPX</string>
-    <string name="notification_channel_name">Enregistrement de randonnée</string>
-    <string name="notification_recording_title">Randonnée en cours</string>
-    <string name="action_start">Démarrer</string>
+    <string name="notification_channel_name">Hike recording</string>
+    <string name="notification_recording_title">Hike in progress</string>
+
+    <string name="action_start">Start</string>
     <string name="action_pause">Pause</string>
-    <string name="action_resume">Reprendre</string>
-    <string name="action_stop">Arrêter</string>
-    <string name="action_export_gpx">Exporter en GPX</string>
-    <string name="screen_history">Historique</string>
-    <string name="screen_recording">Enregistrement</string>
-    <string name="screen_detail">Détail de la randonnée</string>
+    <string name="action_resume">Resume</string>
+    <string name="action_stop">Stop</string>
+    <string name="action_export_gpx">Export</string>
+    <string name="action_share">Share</string>
+    <string name="action_new_hike">New hike</string>
+    <string name="action_estimate">Estimate</string>
+    <string name="action_download">Download</string>
+    <string name="action_enable">Enable</string>
+    <string name="action_settings">Settings</string>
+
+    <string name="screen_history">My hikes</string>
+    <string name="screen_recording">Recording</string>
+    <string name="screen_detail">Hike detail</string>
+    <string name="screen_offline_area">Offline maps</string>
+
+    <string name="content_desc_offline_maps">Offline maps</string>
+    <string name="content_desc_back">Back</string>
+
+    <string name="share_gpx_chooser_title">Export GPX</string>
+
+    <string name="history_empty_title">No hikes yet</string>
+    <string name="history_empty_subtitle">Tap the + button to record your first hike.</string>
+    <plurals name="history_summary_hikes">
+        <item quantity="one">%d hike</item>
+        <item quantity="other">%d hikes</item>
+    </plurals>
+
+    <string name="stat_distance">Distance</string>
+    <string name="stat_duration">Duration</string>
+    <string name="stat_elevation_gain">Elevation gain</string>
+    <string name="stat_elevation_loss">Elevation loss</string>
+    <string name="stat_avg_speed">Avg. speed</string>
+    <string name="stat_moving_speed">Moving speed</string>
+    <string name="stat_max_speed">Max speed</string>
+    <string name="stat_min_altitude">Min altitude</string>
+    <string name="stat_max_altitude">Max altitude</string>
+
+    <string name="detail_elevation_profile_title">Elevation profile</string>
+    <string name="detail_map_title">Route map</string>
+
+    <string name="format_distance_km">%.3f km</string>
+    <string name="format_elevation_gain">+%.0f m</string>
+    <string name="format_elevation_loss">−%.0f m</string>
+    <string name="format_speed_kmh">%.1f km/h</string>
+    <string name="format_altitude_m">%.0f m</string>
+
+    <string name="default_hike_name_format">Hike on %s</string>
+
+    <string name="recording_stat_points">Points</string>
+    <string name="recording_stat_state">Status</string>
+    <string name="recording_stat_state_stopped">Stopped</string>
+    <string name="recording_stat_state_paused">Paused</string>
+    <string name="recording_stat_state_active">Active</string>
+    <string name="recording_stat_speed">Speed</string>
+    <string name="recording_location_permission_required">Location permission is required to record a hike.</string>
+
+    <string name="advice_background_location_text">To keep recording once the screen is off, allow location access \"all the time\".</string>
+    <string name="advice_battery_text">Some phones stop GPS tracking to save battery. Disable battery optimization for this app to avoid interruptions.</string>
+
+    <string name="offline_area_instructions">Pan and zoom the map to frame the area you want to make available offline, then choose the zoom range (the higher the max zoom, the larger the download).</string>
+    <string name="offline_area_zoom_min">Minimum zoom: %d</string>
+    <string name="offline_area_zoom_max">Maximum zoom: %d</string>
+    <string name="offline_area_tiles_estimate">≈ %d tiles to download</string>
+    <string name="offline_area_download_done">Download complete: the area is now available offline.</string>
+    <string name="offline_area_download_error">Error: %s</string>
+
+    <string name="action_delete">Delete</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_save">Save</string>
+    <string name="content_desc_edit_name">Edit name</string>
+    <string name="hike_name_label">Hike name</string>
+    <string name="dialog_rename_hike_title">Rename hike</string>
+    <string name="dialog_delete_hike_title">Delete this hike?</string>
+    <string name="dialog_delete_hike_message">This will permanently remove the hike and its recorded track. This cannot be undone.</string>
+
+    <string name="massif_label">Mountain range</string>
+    <string name="massif_none">No mountain range</string>
+    <string name="action_manage_massifs">Manage mountain ranges</string>
+    <string name="content_desc_manage_massifs">Manage mountain ranges</string>
+    <string name="screen_manage_massifs">Mountain ranges</string>
+    <string name="massif_name_hint">New mountain range name</string>
+    <string name="action_add">Add</string>
+    <string name="content_desc_delete_massif">Delete mountain range</string>
+    <string name="manage_massifs_empty">No mountain range yet. Add one to start classifying your hikes.</string>
+
+    <string name="filter_massif_label">Range</string>
+    <string name="filter_year_label">Year</string>
+    <string name="filter_all_massifs">All</string>
+    <string name="filter_all_years">All</string>
+
+    <string name="action_import_gpx">Import a GPX file</string>
+    <string name="content_desc_import_gpx">Import a GPX file</string>
+    <string name="import_gpx_success">Hike imported: %s</string>
+    <string name="import_gpx_error">Import failed: %s</string>
+    <string name="import_gpx_empty_track">This GPX file has no track points.</string>
 </resources>

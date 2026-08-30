@@ -1,0 +1,1 @@
+First release: background GPS recording, EGM96 altitude correction, GPX export, offline maps, hike history with statistics and route map.

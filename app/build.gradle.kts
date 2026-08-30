@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.tonapp.rando"
+    namespace = "fr.pierre.randogpx"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.tonapp.rando"
+        applicationId = "fr.pierre.randogpx"
         minSdk = 26 // Android 8.0, nécessaire pour les Foreground Service types modernes
         targetSdk = 35
         versionCode = 1
@@ -17,9 +17,21 @@ android {
     }
 
     buildTypes {
+        debug {
+            // Suffixe d'applicationId indispensable pour pouvoir installer le debug et le
+            // release en parallèle sur le même téléphone (sinon même package = la seconde
+            // installation remplace la première au lieu de coexister).
+            applicationIdSuffix = ".debug"
+        }
         release {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            // Signature avec la clé debug (auto-générée par AGP) uniquement pour pouvoir
+            // installer ce build release localement à des fins de comparaison/test. À
+            // remplacer par une vraie clé de release (gardée en lieu sûr, jamais dans le
+            // dépôt) avant toute publication réelle — F-Droid signe de toute façon ses
+            // propres builds reproductibles et ignore cette configuration.
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
 
