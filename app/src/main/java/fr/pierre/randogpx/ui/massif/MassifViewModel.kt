@@ -20,6 +20,12 @@ class MassifViewModel(private val repository: HikeRepository) : ViewModel() {
         viewModelScope.launch { repository.createMassif(trimmed) }
     }
 
+    fun renameMassif(massifId: Long, name: String) {
+        val trimmed = name.trim()
+        if (trimmed.isEmpty()) return
+        viewModelScope.launch { repository.renameMassif(massifId, trimmed) }
+    }
+
     fun deleteMassif(massifId: Long) {
         viewModelScope.launch { repository.deleteMassif(massifId) }
     }

@@ -55,6 +55,7 @@ fun RecordingScreen(
     val trackingState by (boundService?.state
         ?: remember { MutableStateFlowPlaceholder() }).collectAsState()
     val trackPoints by viewModel.trackPoints.collectAsState()
+    var showStopConfirmation by remember { mutableStateOf(false) }
 
     // Le service de localisation au premier plan (foreground) ne doit être démarré
     // qu'une fois la permission de localisation accordée : sur Android 14+, démarrer
@@ -278,7 +279,7 @@ fun RecordingScreen(
                         )
                     }
                     Button(
-                        onClick = { viewModel.stopHike(onFinished) },
+                        onClick = { showStopConfirmation = true },
                         modifier = Modifier.weight(1f),
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
                     ) {
@@ -289,6 +290,27 @@ fun RecordingScreen(
                 }
             }
         }
+    }
+
+    if (showStopConfirmation) {
+        AlertDialog(
+            onDismissRequest = { showStopConfirmation = false },
+            title = { Text(stringResourceCompat(R.string.dialog_stop_recording_title)) },
+            text = { Text(stringResourceCompat(R.string.dialog_stop_recording_message)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    showStopConfirmation = false
+                    viewModel.stopHike(onFinished)
+                }) {
+                    Text(stringResourceCompat(R.string.action_stop), color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showStopConfirmation = false }) {
+                    Text(stringResourceCompat(R.string.action_cancel))
+                }
+            }
+        )
     }
 }
 

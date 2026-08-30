@@ -22,6 +22,8 @@ class HikeRepository(
 
     suspend fun createMassif(name: String): Long = massifDao.insertMassif(Massif(name = name))
 
+    suspend fun renameMassif(massifId: Long, name: String) = massifDao.renameMassif(massifId, name)
+
     /** Détache d'abord les randonnées classées dans ce massif, pour ne pas laisser de référence orpheline. */
     suspend fun deleteMassif(massifId: Long) {
         hikeDao.clearMassif(massifId)
@@ -93,6 +95,32 @@ class HikeRepository(
     }
 
     suspend fun deleteHike(hikeId: Long) = hikeDao.deleteHike(hikeId)
+
+    /**
+     * Remplace l'altitude de chaque point par une valeur issue d'un modèle de terrain
+     * (voir [fr.pierre.randogpx.location.TerrainElevationCorrector]), plus stable que le
+     * capteur GPS pour calculer un dénivelé fiable, puis recalcule les stats de la
+     * randonnée à partir de ces nouvelles valeurs. Ne fait rien et renvoie `false` si la
+     * correction échoue (typiquement : pas de réseau et tuile pas déjà en cache) — la
+     * randonnée garde alors ses valeurs GPS d'origine, jamais d'état à moitié corrigé.
+     */
+    suspend fun applyTerrainElevationCorrection(
+        hikeId: Long,
+        correctElevations: suspend (List<Pair<Double, Double>>) -> List<Double>?
+    ): Boolean {
+        val hike = hikeDao.getHikeById(hikeId) ?: return false
+        val points = trackPointDao.getPointsForHike(hikeId)
+        if (points.isEmpty()) return false
+
+        val corrected = correctElevations(points.map { it.lat to it.lon }) ?: return false
+
+        points.zip(corrected).forEach { (point, altitude) ->
+            trackPointDao.updateAltitudeCorrected(point.id, altitude)
+        }
+
+        hike.endTime?.let { finalizeHike(hikeId, it) }
+        return true
+    }
 
     /**
      * Recalcule les stats d'une randonnée déjà terminée à partir de ses points actuels.

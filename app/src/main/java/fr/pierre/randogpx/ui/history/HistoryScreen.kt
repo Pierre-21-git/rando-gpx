@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.Hiking
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.Map
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Straighten
 import androidx.compose.material.icons.filled.Terrain
@@ -61,10 +62,9 @@ fun HistoryScreen(
     val context = LocalContext.current
     val hikes by viewModel.hikes.collectAsState()
     val massifs by viewModel.massifs.collectAsState()
+    val selectedMassifId by viewModel.selectedMassifId.collectAsState()
+    val selectedYear by viewModel.selectedYear.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
-
-    var selectedMassifId by remember { mutableStateOf<Long?>(null) }
-    var selectedYear by remember { mutableStateOf<Int?>(null) }
 
     val importLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         uri?.let { viewModel.importGpx(context, it) }
@@ -98,18 +98,12 @@ fun HistoryScreen(
             TopAppBar(
                 title = { Text(stringResource(R.string.screen_history)) },
                 actions = {
-                    IconButton(onClick = { importLauncher.launch("*/*") }) {
-                        Icon(Icons.Default.FileUpload, contentDescription = stringResource(R.string.content_desc_import_gpx))
-                    }
-                    IconButton(onClick = onManageMassifs) {
-                        Icon(Icons.Default.Layers, contentDescription = stringResource(R.string.content_desc_manage_massifs))
-                    }
-                    IconButton(onClick = onOpenOfflineAreas) {
-                        Icon(Icons.Default.Map, contentDescription = stringResource(R.string.content_desc_offline_maps))
-                    }
-                    IconButton(onClick = onOpenAbout) {
-                        Icon(Icons.Default.Info, contentDescription = stringResource(R.string.action_about))
-                    }
+                    OverflowMenu(
+                        onImportGpx = { importLauncher.launch("*/*") },
+                        onManageMassifs = onManageMassifs,
+                        onOpenOfflineAreas = onOpenOfflineAreas,
+                        onOpenAbout = onOpenAbout
+                    )
                 }
             )
         },
@@ -136,8 +130,8 @@ fun HistoryScreen(
                         years = years,
                         selectedMassifId = selectedMassifId,
                         selectedYear = selectedYear,
-                        onMassifSelected = { selectedMassifId = it },
-                        onYearSelected = { selectedYear = it }
+                        onMassifSelected = { viewModel.selectMassifFilter(it) },
+                        onYearSelected = { viewModel.selectYearFilter(it) }
                     )
                 }
                 items(filteredHikes, key = { it.id }) { hike ->
@@ -148,6 +142,44 @@ fun HistoryScreen(
                     )
                 }
             }
+        }
+    }
+}
+
+/** Regroupe les actions secondaires de l'écran (import, massifs, cartes hors ligne, à propos). */
+@Composable
+private fun OverflowMenu(
+    onImportGpx: () -> Unit,
+    onManageMassifs: () -> Unit,
+    onOpenOfflineAreas: () -> Unit,
+    onOpenAbout: () -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+    Box {
+        IconButton(onClick = { expanded = true }) {
+            Icon(Icons.Default.MoreVert, contentDescription = stringResource(R.string.content_desc_more_options))
+        }
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.action_import_gpx)) },
+                leadingIcon = { Icon(Icons.Default.FileUpload, contentDescription = null) },
+                onClick = { expanded = false; onImportGpx() }
+            )
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.action_manage_massifs)) },
+                leadingIcon = { Icon(Icons.Default.Layers, contentDescription = null) },
+                onClick = { expanded = false; onManageMassifs() }
+            )
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.screen_offline_area)) },
+                leadingIcon = { Icon(Icons.Default.Map, contentDescription = null) },
+                onClick = { expanded = false; onOpenOfflineAreas() }
+            )
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.action_about)) },
+                leadingIcon = { Icon(Icons.Default.Info, contentDescription = null) },
+                onClick = { expanded = false; onOpenAbout() }
+            )
         }
     }
 }

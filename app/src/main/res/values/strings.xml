@@ -78,8 +78,12 @@
     <string name="content_desc_edit_name">Edit name</string>
     <string name="hike_name_label">Hike name</string>
     <string name="dialog_rename_hike_title">Rename hike</string>
+    <string name="dialog_rename_massif_title">Rename mountain range</string>
+    <string name="content_desc_edit_massif">Rename mountain range</string>
     <string name="dialog_delete_hike_title">Delete this hike?</string>
     <string name="dialog_delete_hike_message">This will permanently remove the hike and its recorded track. This cannot be undone.</string>
+    <string name="dialog_stop_recording_title">Stop recording?</string>
+    <string name="dialog_stop_recording_message">The hike will be saved with the points collected so far.</string>
 
     <string name="massif_label">Mountain range</string>
     <string name="massif_none">No mountain range</string>

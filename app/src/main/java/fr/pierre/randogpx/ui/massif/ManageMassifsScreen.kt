@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -34,6 +35,18 @@ fun ManageMassifsScreen(
 ) {
     val massifs by viewModel.massifs.collectAsState()
     var newMassifName by remember { mutableStateOf("") }
+    var massifBeingRenamed by remember { mutableStateOf<Massif?>(null) }
+
+    massifBeingRenamed?.let { massif ->
+        RenameMassifDialog(
+            initialName = massif.name,
+            onDismiss = { massifBeingRenamed = null },
+            onConfirm = {
+                viewModel.renameMassif(massif.id, it)
+                massifBeingRenamed = null
+            }
+        )
+    }
 
     Scaffold(
         topBar = {
@@ -82,7 +95,11 @@ fun ManageMassifsScreen(
             } else {
                 LazyColumn(contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)) {
                     items(massifs, key = { it.id }) { massif ->
-                        MassifRow(massif = massif, onDelete = { viewModel.deleteMassif(massif.id) })
+                        MassifRow(
+                            massif = massif,
+                            onEdit = { massifBeingRenamed = massif },
+                            onDelete = { viewModel.deleteMassif(massif.id) }
+                        )
                     }
                 }
             }
@@ -91,13 +108,16 @@ fun ManageMassifsScreen(
 }
 
 @Composable
-private fun MassifRow(massif: Massif, onDelete: () -> Unit) {
+private fun MassifRow(massif: Massif, onEdit: () -> Unit, onDelete: () -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(massif.name, style = MaterialTheme.typography.bodyLarge)
+        Text(massif.name, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
+        IconButton(onClick = onEdit) {
+            Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.content_desc_edit_massif))
+        }
         IconButton(onClick = onDelete) {
             Icon(
                 Icons.Default.Delete,
@@ -107,4 +127,29 @@ private fun MassifRow(massif: Massif, onDelete: () -> Unit) {
         }
     }
     HorizontalDivider()
+}
+
+@Composable
+private fun RenameMassifDialog(initialName: String, onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
+    var name by remember { mutableStateOf(initialName) }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.dialog_rename_massif_title)) },
+        text = {
+            OutlinedTextField(
+                value = name,
+                onValueChange = { name = it },
+                label = { Text(stringResource(R.string.massif_name_hint)) },
+                singleLine = true
+            )
+        },
+        confirmButton = {
+            TextButton(onClick = { if (name.isNotBlank()) onConfirm(name) }) {
+                Text(stringResource(R.string.action_save))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) }
+        }
+    )
 }

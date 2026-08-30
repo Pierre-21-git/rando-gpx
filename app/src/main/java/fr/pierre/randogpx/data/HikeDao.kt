@@ -34,6 +34,9 @@ interface MassifDao {
     @Insert
     suspend fun insertMassif(massif: Massif): Long
 
+    @Query("UPDATE massifs SET name = :name WHERE id = :massifId")
+    suspend fun renameMassif(massifId: Long, name: String)
+
     @Query("DELETE FROM massifs WHERE id = :massifId")
     suspend fun deleteMassif(massifId: Long)
 
@@ -59,4 +62,7 @@ interface TrackPointDao {
 
     @Query("SELECT * FROM track_points WHERE hikeId = :hikeId ORDER BY timestamp DESC LIMIT 1")
     suspend fun getLastPointForHike(hikeId: Long): TrackPoint?
+
+    @Query("UPDATE track_points SET altitudeCorrected = :altitude WHERE id = :pointId")
+    suspend fun updateAltitudeCorrected(pointId: Long, altitude: Double)
 }

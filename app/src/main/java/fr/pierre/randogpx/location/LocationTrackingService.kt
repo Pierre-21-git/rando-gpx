@@ -137,6 +137,12 @@ class LocationTrackingService : Service() {
         val hikeId = currentHikeId ?: return
         scope.launch {
             repository.finalizeHike(hikeId, System.currentTimeMillis())
+            // Meilleur effort : affine le dénivelé avec un modèle de terrain (plus stable
+            // que le capteur GPS) si un réseau est disponible à l'arrêt. En son absence,
+            // la randonnée garde simplement les stats calculées depuis le GPS ci-dessus —
+            // l'utilisateur peut relancer la correction plus tard depuis l'écran détail.
+            val corrector = TerrainElevationCorrector(applicationContext)
+            repository.applyTerrainElevationCorrection(hikeId, corrector::correctElevations)
             _state.update { TrackingState() }
             currentHikeId = null
             // onFinished déclenche une navigation Compose (NavController), qui exige le

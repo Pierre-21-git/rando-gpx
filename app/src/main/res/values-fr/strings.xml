@@ -78,8 +78,12 @@
     <string name="content_desc_edit_name">Modifier le nom</string>
     <string name="hike_name_label">Nom de la randonnée</string>
     <string name="dialog_rename_hike_title">Renommer la randonnée</string>
+    <string name="dialog_rename_massif_title">Renommer le massif</string>
+    <string name="content_desc_edit_massif">Renommer le massif</string>
     <string name="dialog_delete_hike_title">Supprimer cette randonnée ?</string>
     <string name="dialog_delete_hike_message">La randonnée et son tracé enregistré seront définitivement supprimés. Cette action est irréversible.</string>
+    <string name="dialog_stop_recording_title">Arrêter l\'enregistrement ?</string>
+    <string name="dialog_stop_recording_message">La randonnée sera enregistrée avec les points déjà collectés.</string>
 
     <string name="massif_label">Massif</string>
     <string name="massif_none">Aucun massif</string>
