@@ -86,6 +86,13 @@
     <string name="action_manage_massifs">Manage mountain ranges</string>
     <string name="content_desc_manage_massifs">Manage mountain ranges</string>
     <string name="screen_manage_massifs">Mountain ranges</string>
+    <string name="screen_about">About</string>
+    <string name="content_desc_more_options">More options</string>
+    <string name="action_about">About</string>
+    <string name="about_version_label">Version</string>
+    <string name="about_license_label">License</string>
+    <string name="about_license_name">GNU General Public License v3.0 or later</string>
+    <string name="about_description">Rando GPX is a free, open-source hike-recording app with no dependency on Google Play Services.</string>
     <string name="massif_name_hint">New mountain range name</string>
     <string name="action_add">Add</string>
     <string name="content_desc_delete_massif">Delete mountain range</string>

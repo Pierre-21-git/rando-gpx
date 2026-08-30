@@ -86,6 +86,13 @@
     <string name="action_manage_massifs">Gérer les massifs</string>
     <string name="content_desc_manage_massifs">Gérer les massifs</string>
     <string name="screen_manage_massifs">Massifs</string>
+    <string name="screen_about">À propos</string>
+    <string name="content_desc_more_options">Plus d\'options</string>
+    <string name="action_about">À propos</string>
+    <string name="about_version_label">Version</string>
+    <string name="about_license_label">Licence</string>
+    <string name="about_license_name">GNU General Public License v3.0 ou ultérieure</string>
+    <string name="about_description">Rando GPX est une application libre d\'enregistrement de randonnées, sans dépendance à Google Play Services.</string>
     <string name="massif_name_hint">Nom du nouveau massif</string>
     <string name="action_add">Ajouter</string>
     <string name="content_desc_delete_massif">Supprimer le massif</string>

@@ -24,6 +24,7 @@ android {
             applicationIdSuffix = ".debug"
         }
         release {
+            isDebuggable = true // TEMPORAIRE : retiré juste après l'import GPX en masse, voir commentaire plus bas
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             // Signature avec la clé debug (auto-générée par AGP) uniquement pour pouvoir
@@ -49,6 +50,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.14"

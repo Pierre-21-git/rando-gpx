@@ -10,6 +10,7 @@ import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.FileUpload
 import androidx.compose.material.icons.filled.Hiking
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Schedule
@@ -50,6 +51,7 @@ fun HistoryScreen(
     onOpenHike: (Long) -> Unit,
     onOpenOfflineAreas: () -> Unit,
     onManageMassifs: () -> Unit,
+    onOpenAbout: () -> Unit,
     viewModel: HistoryViewModel = viewModel(
         factory = ViewModelFactory.from(
             LocalContext.current.applicationContext as RandoApplication
@@ -104,6 +106,9 @@ fun HistoryScreen(
                     }
                     IconButton(onClick = onOpenOfflineAreas) {
                         Icon(Icons.Default.Map, contentDescription = stringResource(R.string.content_desc_offline_maps))
+                    }
+                    IconButton(onClick = onOpenAbout) {
+                        Icon(Icons.Default.Info, contentDescription = stringResource(R.string.action_about))
                     }
                 }
             )

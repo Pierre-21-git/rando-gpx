@@ -7,6 +7,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.NavType
+import fr.pierre.randogpx.ui.about.AboutScreen
 import fr.pierre.randogpx.ui.detail.DetailScreen
 import fr.pierre.randogpx.ui.history.HistoryScreen
 import fr.pierre.randogpx.ui.map.OfflineAreaScreen
@@ -18,6 +19,7 @@ sealed class Screen(val route: String) {
     object Recording : Screen("recording")
     object OfflineArea : Screen("offline_area")
     object ManageMassifs : Screen("massifs")
+    object About : Screen("about")
     object Detail : Screen("detail/{hikeId}") {
         fun createRoute(hikeId: Long) = "detail/$hikeId"
     }
@@ -32,8 +34,13 @@ fun RandoNavGraph(navController: NavHostController = rememberNavController()) {
                 onStartNewHike = { navController.navigate(Screen.Recording.route) },
                 onOpenHike = { hikeId -> navController.navigate(Screen.Detail.createRoute(hikeId)) },
                 onOpenOfflineAreas = { navController.navigate(Screen.OfflineArea.route) },
-                onManageMassifs = { navController.navigate(Screen.ManageMassifs.route) }
+                onManageMassifs = { navController.navigate(Screen.ManageMassifs.route) },
+                onOpenAbout = { navController.navigate(Screen.About.route) }
             )
+        }
+
+        composable(Screen.About.route) {
+            AboutScreen(onBack = { navController.popBackStack() })
         }
 
         composable(Screen.OfflineArea.route) {

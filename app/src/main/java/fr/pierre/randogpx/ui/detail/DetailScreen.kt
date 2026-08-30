@@ -165,7 +165,6 @@ fun DetailScreen(
                 elevationLoss = currentHike.elevationLossMeters,
                 avgSpeedKmh = currentHike.averageSpeedKmh,
                 movingSpeedKmh = currentHike.movingSpeedKmh,
-                maxSpeedKmh = currentHike.maxSpeedKmh,
                 minAltitude = currentHike.minAltitudeMeters,
                 maxAltitude = currentHike.maxAltitudeMeters,
                 durationMillis = currentHike.endTime?.minus(currentHike.startTime)
@@ -377,7 +376,6 @@ private fun StatsGrid(
     elevationLoss: Double,
     avgSpeedKmh: Double,
     movingSpeedKmh: Double,
-    maxSpeedKmh: Double,
     minAltitude: Double,
     maxAltitude: Double,
     durationMillis: Long?
@@ -393,7 +391,6 @@ private fun StatsGrid(
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             StatTile(Icons.Default.Speed, stringResource(R.string.stat_avg_speed), stringResource(R.string.format_speed_kmh, avgSpeedKmh), Modifier.weight(1f))
             StatTile(Icons.Default.Speed, stringResource(R.string.stat_moving_speed), stringResource(R.string.format_speed_kmh, movingSpeedKmh), Modifier.weight(1f))
-            StatTile(Icons.Default.Speed, stringResource(R.string.stat_max_speed), stringResource(R.string.format_speed_kmh, maxSpeedKmh), Modifier.weight(1f))
         }
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             StatTile(Icons.AutoMirrored.Filled.TrendingUp, stringResource(R.string.stat_elevation_gain), stringResource(R.string.format_elevation_gain, elevationGain), Modifier.weight(1f))
