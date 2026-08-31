@@ -1,5 +1,7 @@
 # Rando GPX
 
+*[English version](README.en.md)*
+
 Application Android d'enregistrement de randonnées, **libre et sans dépendance
 à Google Play Services**. Localisation via l'API Android standard
 (`LocationManager`), aucun tracker, aucune télémétrie.

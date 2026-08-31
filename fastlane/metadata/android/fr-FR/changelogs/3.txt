@@ -1,0 +1,1 @@
+Correction du dénivelé pour les randonnées importées : le bruit GPS de l'altitude n'était pas filtré, gonflant le dénivelé jusqu'à 10x sur certains fichiers GPX.

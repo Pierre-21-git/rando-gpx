@@ -1,0 +1,1 @@
+Fixed elevation gain/loss for imported hikes: GPS altitude noise was not filtered, inflating elevation gain up to 10x on some GPX files.
