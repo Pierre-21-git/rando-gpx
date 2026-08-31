@@ -8,13 +8,11 @@ Application Android d'enregistrement de randonnées, **libre et sans dépendance
 
 ## Captures d'écran
 
-<!-- Remplacer par de vraies captures, par exemple :
 <p float="left">
-  <img src="docs/screenshots/accueil.png" width="200" />
-  <img src="docs/screenshots/detail.png" width="200" />
-  <img src="docs/screenshots/carte.png" width="200" />
+  <img src="fastlane/metadata/android/fr-FR/images/phoneScreenshots/1.png" width="200" />
+  <img src="fastlane/metadata/android/fr-FR/images/phoneScreenshots/2.png" width="200" />
+  <img src="fastlane/metadata/android/fr-FR/images/phoneScreenshots/3.png" width="200" />
 </p>
--->
 
 ## Fonctionnalités
 

@@ -8,13 +8,11 @@ no tracker, no telemetry.
 
 ## Screenshots
 
-<!-- Replace with real screenshots, e.g.:
 <p float="left">
-  <img src="docs/screenshots/home.png" width="200" />
-  <img src="docs/screenshots/detail.png" width="200" />
-  <img src="docs/screenshots/map.png" width="200" />
+  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/1.png" width="200" />
+  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/2.png" width="200" />
+  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/3.png" width="200" />
 </p>
--->
 
 ## Features
 
