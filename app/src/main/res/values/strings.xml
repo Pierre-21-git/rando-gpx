@@ -101,10 +101,12 @@
     <string name="action_add">Add</string>
     <string name="content_desc_delete_massif">Delete mountain range</string>
     <string name="manage_massifs_empty">No mountain range yet. Add one to start classifying your hikes.</string>
+    <string name="massif_delete_blocked">Can\'t delete: this mountain range is still used by at least one hike. Remove it from those hikes first.</string>
 
     <string name="filter_massif_label">Range</string>
     <string name="filter_year_label">Year</string>
     <string name="filter_all_massifs">All</string>
+    <string name="filter_no_massif">None</string>
     <string name="filter_all_years">All</string>
 
     <string name="action_import_gpx">Import a GPX file</string>

@@ -87,8 +87,12 @@ fun HistoryScreen(
     val years = remember(hikes) { hikes.map { yearOf(it.startTime) }.distinct().sortedDescending() }
     val filteredHikes = remember(hikes, selectedMassifId, selectedYear) {
         hikes.filter { hike ->
-            (selectedMassifId == null || hike.massifId == selectedMassifId) &&
-                (selectedYear == null || yearOf(hike.startTime) == selectedYear)
+            val massifMatches = when (selectedMassifId) {
+                null -> true
+                NO_MASSIF_FILTER_ID -> hike.massifId == null
+                else -> hike.massifId == selectedMassifId
+            }
+            massifMatches && (selectedYear == null || yearOf(hike.startTime) == selectedYear)
         }
     }
 
@@ -196,10 +200,15 @@ private fun FilterRow(
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         FilterDropdown(
             label = stringResource(R.string.filter_massif_label),
-            selectedLabel = massifs.find { it.id == selectedMassifId }?.name
-                ?: stringResource(R.string.filter_all_massifs),
-            options = listOf(null to stringResource(R.string.filter_all_massifs)) +
-                massifs.map { it.id to it.name },
+            selectedLabel = when (selectedMassifId) {
+                null -> stringResource(R.string.filter_all_massifs)
+                NO_MASSIF_FILTER_ID -> stringResource(R.string.filter_no_massif)
+                else -> massifs.find { it.id == selectedMassifId }?.name ?: stringResource(R.string.filter_all_massifs)
+            },
+            options = listOf(
+                null to stringResource(R.string.filter_all_massifs),
+                NO_MASSIF_FILTER_ID to stringResource(R.string.filter_no_massif)
+            ) + massifs.map { it.id to it.name },
             onSelected = onMassifSelected,
             modifier = Modifier.weight(1f)
         )
@@ -364,3 +373,6 @@ private fun formatDate(timestampMillis: Long): String =
 
 private fun yearOf(timestampMillis: Long): Int =
     Calendar.getInstance().apply { timeInMillis = timestampMillis }.get(Calendar.YEAR)
+
+/** Sentinelle du filtre massif pour "Aucun massif", distincte de `null` qui veut dire "Tous" — les id réels démarrent à 1. */
+private const val NO_MASSIF_FILTER_ID = -1L

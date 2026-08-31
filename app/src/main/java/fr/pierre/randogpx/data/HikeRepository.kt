@@ -24,10 +24,16 @@ class HikeRepository(
 
     suspend fun renameMassif(massifId: Long, name: String) = massifDao.renameMassif(massifId, name)
 
-    /** Détache d'abord les randonnées classées dans ce massif, pour ne pas laisser de référence orpheline. */
-    suspend fun deleteMassif(massifId: Long) {
-        hikeDao.clearMassif(massifId)
+    /**
+     * Refuse de supprimer un massif encore utilisé par au moins une randonnée (renvoie
+     * `false`) plutôt que de détacher silencieusement ces randonnées — l'utilisateur doit
+     * d'abord les reclasser ou choisir "Aucun massif" lui-même, à la vue de laquelle
+     * randonnée est concernée.
+     */
+    suspend fun deleteMassif(massifId: Long): Boolean {
+        if (hikeDao.countHikesUsingMassif(massifId) > 0) return false
         massifDao.deleteMassif(massifId)
+        return true
     }
 
     suspend fun renameHike(hikeId: Long, name: String) {

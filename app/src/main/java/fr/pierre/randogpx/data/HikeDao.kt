@@ -24,8 +24,8 @@ interface HikeDao {
     @Query("DELETE FROM hikes WHERE id = :hikeId")
     suspend fun deleteHike(hikeId: Long)
 
-    @Query("UPDATE hikes SET massifId = NULL WHERE massifId = :massifId")
-    suspend fun clearMassif(massifId: Long)
+    @Query("SELECT COUNT(*) FROM hikes WHERE massifId = :massifId")
+    suspend fun countHikesUsingMassif(massifId: Long): Int
 }
 
 @Dao

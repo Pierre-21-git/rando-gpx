@@ -101,10 +101,12 @@
     <string name="action_add">Ajouter</string>
     <string name="content_desc_delete_massif">Supprimer le massif</string>
     <string name="manage_massifs_empty">Aucun massif pour l\'instant. Ajoutez-en un pour classer vos randonnées.</string>
+    <string name="massif_delete_blocked">Impossible de supprimer : ce massif est encore utilisé par au moins une randonnée. Retirez-le de ces randonnées d\'abord.</string>
 
     <string name="filter_massif_label">Massif</string>
     <string name="filter_year_label">Année</string>
     <string name="filter_all_massifs">Tous</string>
+    <string name="filter_no_massif">Aucun</string>
     <string name="filter_all_years">Toutes</string>
 
     <string name="action_import_gpx">Importer un fichier GPX</string>

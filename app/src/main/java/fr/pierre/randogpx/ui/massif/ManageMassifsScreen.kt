@@ -9,6 +9,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -36,6 +37,14 @@ fun ManageMassifsScreen(
     val massifs by viewModel.massifs.collectAsState()
     var newMassifName by remember { mutableStateOf("") }
     var massifBeingRenamed by remember { mutableStateOf<Massif?>(null) }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val deleteBlockedMessage = stringResource(R.string.massif_delete_blocked)
+
+    LaunchedEffect(Unit) {
+        viewModel.deleteBlocked.collect {
+            snackbarHostState.showSnackbar(deleteBlockedMessage)
+        }
+    }
 
     massifBeingRenamed?.let { massif ->
         RenameMassifDialog(
@@ -49,6 +58,7 @@ fun ManageMassifsScreen(
     }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.screen_manage_massifs)) },
