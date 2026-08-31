@@ -9,6 +9,7 @@ import fr.pierre.randogpx.data.HikeRepository
 import fr.pierre.randogpx.data.Massif
 import fr.pierre.randogpx.data.TrackPoint
 import fr.pierre.randogpx.gpx.GpxImporter
+import fr.pierre.randogpx.location.GpsFilter
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -65,13 +66,21 @@ class HistoryViewModel(private val repository: HikeRepository) : ViewModel() {
                     return@launch
                 }
                 val name = track.name ?: "GPX"
+                // L'altitude brute d'un GPX importé est aussi bruitée que celle d'un
+                // enregistrement live (voire plus, selon l'appareil/l'app d'origine) : on
+                // lui applique le même filtre anti-bruit que LocationTrackingService,
+                // plutôt que de la sommer telle quelle dans le calcul de dénivelé.
+                val elevationFilter = GpsFilter()
                 val points = track.points.map {
+                    val smoothed = it.elevation?.let { ele ->
+                        elevationFilter.processAltitude(altitude = ele, hasAltitude = true, verticalAccuracyMeters = null)
+                    }
                     TrackPoint(
                         hikeId = 0,
                         lat = it.lat,
                         lon = it.lon,
                         altitudeGps = it.elevation ?: 0.0,
-                        altitudeCorrected = it.elevation,
+                        altitudeCorrected = smoothed,
                         timestamp = it.timestampMillis ?: 0L
                     )
                 }
