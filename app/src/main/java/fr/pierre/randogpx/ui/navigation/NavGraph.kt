@@ -56,7 +56,8 @@ fun RandoNavGraph(navController: NavHostController = rememberNavController()) {
                 onFinished = { hikeId ->
                     navController.popBackStack()
                     navController.navigate(Screen.Detail.createRoute(hikeId))
-                }
+                },
+                onBack = { navController.popBackStack() }
             )
         }
 

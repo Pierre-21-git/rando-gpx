@@ -14,6 +14,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.Stop
@@ -21,6 +22,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -44,6 +46,7 @@ import java.util.Locale
 @Composable
 fun RecordingScreen(
     onFinished: (Long) -> Unit,
+    onBack: () -> Unit,
     viewModel: RecordingViewModel = viewModel(
         factory = ViewModelFactory.from(
             LocalContext.current.applicationContext as RandoApplication
@@ -56,6 +59,7 @@ fun RecordingScreen(
         ?: remember { MutableStateFlowPlaceholder() }).collectAsState()
     val trackPoints by viewModel.trackPoints.collectAsState()
     var showStopConfirmation by remember { mutableStateOf(false) }
+    var showBackConfirmation by remember { mutableStateOf(false) }
 
     // Le service de localisation au premier plan (foreground) ne doit être démarré
     // qu'une fois la permission de localisation accordée : sur Android 14+, démarrer
@@ -151,7 +155,20 @@ fun RecordingScreen(
     }
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text(stringResourceCompat(R.string.screen_recording)) }) }
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResourceCompat(R.string.screen_recording)) },
+                navigationIcon = {
+                    IconButton(
+                        onClick = {
+                            if (trackingState.isRecording) showBackConfirmation = true else onBack()
+                        }
+                    ) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResourceCompat(R.string.content_desc_back))
+                    }
+                }
+            )
+        }
     ) { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(padding)) {
 
@@ -167,7 +184,7 @@ fun RecordingScreen(
                 }
             }
             AndroidView(
-                modifier = Modifier.weight(1f).fillMaxWidth(),
+                modifier = Modifier.weight(1f).fillMaxWidth().clipToBounds(),
                 factory = { ctx ->
                     MapView(ctx).apply {
                         setTileSource(OsmdroidConfigurator.openTopoMapSource)
@@ -307,6 +324,27 @@ fun RecordingScreen(
             },
             dismissButton = {
                 TextButton(onClick = { showStopConfirmation = false }) {
+                    Text(stringResourceCompat(R.string.action_cancel))
+                }
+            }
+        )
+    }
+
+    if (showBackConfirmation) {
+        AlertDialog(
+            onDismissRequest = { showBackConfirmation = false },
+            title = { Text(stringResourceCompat(R.string.dialog_leave_recording_title)) },
+            text = { Text(stringResourceCompat(R.string.dialog_leave_recording_message)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    showBackConfirmation = false
+                    onBack()
+                }) {
+                    Text(stringResourceCompat(R.string.action_leave))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showBackConfirmation = false }) {
                     Text(stringResourceCompat(R.string.action_cancel))
                 }
             }

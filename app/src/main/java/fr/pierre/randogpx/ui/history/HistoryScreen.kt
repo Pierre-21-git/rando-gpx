@@ -5,6 +5,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.Add
@@ -39,6 +40,7 @@ import fr.pierre.randogpx.RandoApplication
 import fr.pierre.randogpx.data.Hike
 import fr.pierre.randogpx.data.Massif
 import fr.pierre.randogpx.ui.ViewModelFactory
+import fr.pierre.randogpx.ui.components.simpleVerticalScrollbar
 import fr.pierre.randogpx.ui.theme.ForestGreen
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -122,13 +124,13 @@ fun HistoryScreen(
         if (hikes.isEmpty()) {
             EmptyHistory(modifier = Modifier.fillMaxSize().padding(padding))
         } else {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize().padding(padding),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                item { SummaryCard(filteredHikes) }
-                item {
+            val listState = rememberLazyListState()
+            Column(modifier = Modifier.fillMaxSize().padding(padding)) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    SummaryCard(filteredHikes)
                     FilterRow(
                         massifs = massifs,
                         years = years,
@@ -138,12 +140,22 @@ fun HistoryScreen(
                         onYearSelected = { viewModel.selectYearFilter(it) }
                     )
                 }
-                items(filteredHikes, key = { it.id }) { hike ->
-                    HikeCard(
-                        hike = hike,
-                        massifName = massifs.find { it.id == hike.massifId }?.name,
-                        onClick = { onOpenHike(hike.id) }
-                    )
+                LazyColumn(
+                    state = listState,
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                        .simpleVerticalScrollbar(listState),
+                    contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(filteredHikes, key = { it.id }) { hike ->
+                        HikeCard(
+                            hike = hike,
+                            massifName = massifs.find { it.id == hike.massifId }?.name,
+                            onClick = { onOpenHike(hike.id) }
+                        )
+                    }
                 }
             }
         }

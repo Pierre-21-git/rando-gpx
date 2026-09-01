@@ -84,6 +84,9 @@
     <string name="dialog_delete_hike_message">La randonnée et son tracé enregistré seront définitivement supprimés. Cette action est irréversible.</string>
     <string name="dialog_stop_recording_title">Arrêter l\'enregistrement ?</string>
     <string name="dialog_stop_recording_message">La randonnée sera enregistrée avec les points déjà collectés.</string>
+    <string name="dialog_leave_recording_title">Quitter l\'écran d\'enregistrement ?</string>
+    <string name="dialog_leave_recording_message">L\'enregistrement continuera en arrière-plan. Vous pourrez revenir sur cet écran à tout moment pour l\'arrêter.</string>
+    <string name="action_leave">Quitter</string>
 
     <string name="massif_label">Massif</string>
     <string name="massif_none">Aucun massif</string>

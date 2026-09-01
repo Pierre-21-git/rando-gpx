@@ -84,6 +84,9 @@
     <string name="dialog_delete_hike_message">This will permanently remove the hike and its recorded track. This cannot be undone.</string>
     <string name="dialog_stop_recording_title">Stop recording?</string>
     <string name="dialog_stop_recording_message">The hike will be saved with the points collected so far.</string>
+    <string name="dialog_leave_recording_title">Leave the recording screen?</string>
+    <string name="dialog_leave_recording_message">Recording will keep running in the background. You can come back to this screen anytime to stop it.</string>
+    <string name="action_leave">Leave</string>
 
     <string name="massif_label">Mountain range</string>
     <string name="massif_none">No mountain range</string>

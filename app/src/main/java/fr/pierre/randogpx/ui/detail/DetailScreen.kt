@@ -42,6 +42,7 @@ import fr.pierre.randogpx.data.TrackPoint
 import fr.pierre.randogpx.gpx.GpxExporter
 import fr.pierre.randogpx.map.OsmdroidConfigurator
 import fr.pierre.randogpx.ui.ViewModelFactory
+import fr.pierre.randogpx.ui.components.simpleVerticalScrollbar
 import fr.pierre.randogpx.ui.theme.ForestGreen
 import fr.pierre.randogpx.ui.theme.TrackColorArgb
 import org.osmdroid.util.GeoPoint
@@ -136,10 +137,8 @@ fun DetailScreen(
             )
         }
 
-        Column(
-            modifier = Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollStateCompat()),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
+        Column(modifier = Modifier.fillMaxSize().padding(padding)) {
+            Spacer(Modifier.height(16.dp))
             HeroHeader(
                 name = currentHike.name,
                 dateText = formatDate(currentHike.startTime),
@@ -150,70 +149,81 @@ fun DetailScreen(
                 onManageMassifs = onManageMassifs
             )
 
-            if (points.size >= 2) {
-                Text(
-                    stringResource(R.string.detail_map_title),
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(horizontal = 16.dp)
+            val scrollState = rememberScrollStateCompat()
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .verticalScroll(scrollState)
+                    .simpleVerticalScrollbar(scrollState),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Spacer(Modifier.height(16.dp))
+                if (points.size >= 2) {
+                    Text(
+                        stringResource(R.string.detail_map_title),
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    )
+                    HikeRouteMap(points = points)
+                }
+
+                StatsGrid(
+                    distanceKm = currentHike.distanceMeters / 1000.0,
+                    elevationGain = currentHike.elevationGainMeters,
+                    elevationLoss = currentHike.elevationLossMeters,
+                    avgSpeedKmh = currentHike.averageSpeedKmh,
+                    movingSpeedKmh = currentHike.movingSpeedKmh,
+                    minAltitude = currentHike.minAltitudeMeters,
+                    maxAltitude = currentHike.maxAltitudeMeters,
+                    durationMillis = currentHike.endTime?.minus(currentHike.startTime)
                 )
-                HikeRouteMap(points = points)
-            }
 
-            StatsGrid(
-                distanceKm = currentHike.distanceMeters / 1000.0,
-                elevationGain = currentHike.elevationGainMeters,
-                elevationLoss = currentHike.elevationLossMeters,
-                avgSpeedKmh = currentHike.averageSpeedKmh,
-                movingSpeedKmh = currentHike.movingSpeedKmh,
-                minAltitude = currentHike.minAltitudeMeters,
-                maxAltitude = currentHike.maxAltitudeMeters,
-                durationMillis = currentHike.endTime?.minus(currentHike.startTime)
-            )
-
-            if (points.isNotEmpty()) {
-                Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-                    Text(stringResource(R.string.detail_elevation_profile_title), style = MaterialTheme.typography.titleMedium)
-                    ElevationChart(points = points)
-                }
-
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    OutlinedButton(
-                        onClick = {
-                            val safeName = currentHike.name.replace(Regex("[^A-Za-z0-9_-]"), "_")
-                            exportLauncher.launch("$safeName.gpx")
-                        },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Icon(Icons.Default.FileDownload, contentDescription = null)
-                        Spacer(Modifier.width(8.dp))
-                        Text(stringResource(R.string.action_export_gpx))
+                if (points.isNotEmpty()) {
+                    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+                        Text(stringResource(R.string.detail_elevation_profile_title), style = MaterialTheme.typography.titleMedium)
+                        ElevationChart(points = points)
                     }
-                    Button(
-                        onClick = {
-                            val file = GpxExporter.export(context, currentHike, points)
-                            val uri = GpxExporter.getShareableUri(context, file)
-                            val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                                type = "application/gpx+xml"
-                                putExtra(Intent.EXTRA_STREAM, uri)
-                                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                            }
-                            context.startActivity(
-                                Intent.createChooser(shareIntent, context.getString(R.string.share_gpx_chooser_title))
-                            )
-                        },
-                        modifier = Modifier.weight(1f)
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        Icon(Icons.Default.Share, contentDescription = null)
-                        Spacer(Modifier.width(8.dp))
-                        Text(stringResource(R.string.action_share))
+                        OutlinedButton(
+                            onClick = {
+                                val safeName = currentHike.name.replace(Regex("[^A-Za-z0-9_-]"), "_")
+                                exportLauncher.launch("$safeName.gpx")
+                            },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Icon(Icons.Default.FileDownload, contentDescription = null)
+                            Spacer(Modifier.width(8.dp))
+                            Text(stringResource(R.string.action_export_gpx))
+                        }
+                        Button(
+                            onClick = {
+                                val file = GpxExporter.export(context, currentHike, points)
+                                val uri = GpxExporter.getShareableUri(context, file)
+                                val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                                    type = "application/gpx+xml"
+                                    putExtra(Intent.EXTRA_STREAM, uri)
+                                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                }
+                                context.startActivity(
+                                    Intent.createChooser(shareIntent, context.getString(R.string.share_gpx_chooser_title))
+                                )
+                            },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Icon(Icons.Default.Share, contentDescription = null)
+                            Spacer(Modifier.width(8.dp))
+                            Text(stringResource(R.string.action_share))
+                        }
                     }
                 }
-            }
 
-            Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(8.dp))
+            }
         }
     }
 }
