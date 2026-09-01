@@ -106,6 +106,10 @@ class HikeRepository(
 
     suspend fun deleteHike(hikeId: Long) = hikeDao.deleteHike(hikeId)
 
+    suspend fun deleteHikes(hikeIds: Collection<Long>) {
+        hikeIds.forEach { hikeDao.deleteHike(it) }
+    }
+
     /**
      * Remplace l'altitude de chaque point par une valeur issue d'un modèle de terrain
      * (voir [fr.pierre.randogpx.location.TerrainElevationCorrector]), plus stable que le

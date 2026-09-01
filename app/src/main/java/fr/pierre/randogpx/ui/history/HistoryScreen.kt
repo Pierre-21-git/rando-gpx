@@ -1,7 +1,10 @@
 package fr.pierre.randogpx.ui.history
 
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -9,6 +12,9 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.FileUpload
 import androidx.compose.material.icons.filled.Hiking
@@ -16,7 +22,9 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.RadioButtonUnchecked
 import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material.icons.filled.Straighten
 import androidx.compose.material.icons.filled.Terrain
 import androidx.compose.material3.*
@@ -69,6 +77,11 @@ fun HistoryScreen(
     val selectedYear by viewModel.selectedYear.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     var showExportFormatChoice by remember { mutableStateOf(false) }
+    var selectedIds by remember { mutableStateOf<Set<Long>>(emptySet()) }
+    var showBulkDeleteConfirmation by remember { mutableStateOf(false) }
+    val isSelectionMode = selectedIds.isNotEmpty()
+
+    BackHandler(enabled = isSelectionMode) { selectedIds = emptySet() }
 
     val importLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { uris ->
         if (uris.isNotEmpty()) viewModel.importMultiple(context, uris)
@@ -123,6 +136,30 @@ fun HistoryScreen(
         )
     }
 
+    if (showBulkDeleteConfirmation) {
+        AlertDialog(
+            onDismissRequest = { showBulkDeleteConfirmation = false },
+            title = { Text(stringResource(R.string.dialog_delete_hikes_title)) },
+            text = {
+                Text(pluralStringResource(R.plurals.dialog_delete_hikes_message, selectedIds.size, selectedIds.size))
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.deleteHikes(selectedIds)
+                    selectedIds = emptySet()
+                    showBulkDeleteConfirmation = false
+                }) {
+                    Text(stringResource(R.string.action_delete), color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showBulkDeleteConfirmation = false }) {
+                    Text(stringResource(R.string.action_cancel))
+                }
+            }
+        )
+    }
+
     val years = remember(hikes) { hikes.map { yearOf(it.startTime) }.distinct().sortedDescending() }
     val filteredHikes = remember(hikes, selectedMassifId, selectedYear) {
         hikes.filter { hike ->
@@ -138,25 +175,46 @@ fun HistoryScreen(
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.screen_history)) },
-                actions = {
-                    OverflowMenu(
-                        onImportGpx = { importLauncher.launch(arrayOf("*/*")) },
-                        onExportAllGpx = { showExportFormatChoice = true },
-                        onManageMassifs = onManageMassifs,
-                        onOpenOfflineAreas = onOpenOfflineAreas,
-                        onOpenAbout = onOpenAbout
-                    )
-                }
-            )
+            if (isSelectionMode) {
+                TopAppBar(
+                    title = { Text(pluralStringResource(R.plurals.selection_count, selectedIds.size, selectedIds.size)) },
+                    navigationIcon = {
+                        IconButton(onClick = { selectedIds = emptySet() }) {
+                            Icon(Icons.Default.Close, contentDescription = stringResource(R.string.action_cancel))
+                        }
+                    },
+                    actions = {
+                        IconButton(onClick = { selectedIds = filteredHikes.map { it.id }.toSet() }) {
+                            Icon(Icons.Default.SelectAll, contentDescription = stringResource(R.string.action_select_all))
+                        }
+                        IconButton(onClick = { showBulkDeleteConfirmation = true }) {
+                            Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.action_delete))
+                        }
+                    }
+                )
+            } else {
+                TopAppBar(
+                    title = { Text(stringResource(R.string.screen_history)) },
+                    actions = {
+                        OverflowMenu(
+                            onImportGpx = { importLauncher.launch(arrayOf("*/*")) },
+                            onExportAllGpx = { showExportFormatChoice = true },
+                            onManageMassifs = onManageMassifs,
+                            onOpenOfflineAreas = onOpenOfflineAreas,
+                            onOpenAbout = onOpenAbout
+                        )
+                    }
+                )
+            }
         },
         floatingActionButton = {
-            ExtendedFloatingActionButton(
-                onClick = onStartNewHike,
-                icon = { Icon(Icons.Default.Add, contentDescription = null) },
-                text = { Text(stringResource(R.string.action_new_hike)) }
-            )
+            if (!isSelectionMode) {
+                ExtendedFloatingActionButton(
+                    onClick = onStartNewHike,
+                    icon = { Icon(Icons.Default.Add, contentDescription = null) },
+                    text = { Text(stringResource(R.string.action_new_hike)) }
+                )
+            }
         }
     ) { padding ->
         if (hikes.isEmpty()) {
@@ -191,7 +249,18 @@ fun HistoryScreen(
                         HikeCard(
                             hike = hike,
                             massifName = massifs.find { it.id == hike.massifId }?.name,
-                            onClick = { onOpenHike(hike.id) }
+                            isSelected = hike.id in selectedIds,
+                            selectionModeActive = isSelectionMode,
+                            onClick = {
+                                if (isSelectionMode) {
+                                    selectedIds = if (hike.id in selectedIds) selectedIds - hike.id else selectedIds + hike.id
+                                } else {
+                                    onOpenHike(hike.id)
+                                }
+                            },
+                            onLongClick = {
+                                selectedIds = if (hike.id in selectedIds) selectedIds - hike.id else selectedIds + hike.id
+                            }
                         )
                     }
                 }
@@ -367,11 +436,37 @@ private fun SummaryItem(value: String) {
     )
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun HikeCard(hike: Hike, massifName: String?, onClick: () -> Unit) {
-    ElevatedCard(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
+private fun HikeCard(
+    hike: Hike,
+    massifName: String?,
+    isSelected: Boolean,
+    selectionModeActive: Boolean,
+    onClick: () -> Unit,
+    onLongClick: () -> Unit
+) {
+    ElevatedCard(
+        modifier = Modifier.fillMaxWidth().combinedClickable(onClick = onClick, onLongClick = onLongClick),
+        colors = if (isSelected) {
+            CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+        } else {
+            CardDefaults.elevatedCardColors()
+        }
+    ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(hike.name, style = MaterialTheme.typography.titleMedium)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                if (selectionModeActive) {
+                    Icon(
+                        imageVector = if (isSelected) Icons.Default.CheckCircle else Icons.Default.RadioButtonUnchecked,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(Modifier.width(8.dp))
+                }
+                Text(hike.name, style = MaterialTheme.typography.titleMedium)
+            }
             Spacer(Modifier.height(4.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(

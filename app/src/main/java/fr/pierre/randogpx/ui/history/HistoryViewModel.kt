@@ -67,6 +67,10 @@ class HistoryViewModel(private val repository: HikeRepository) : ViewModel() {
         viewModelScope.launch { repository.deleteHike(hikeId) }
     }
 
+    fun deleteHikes(hikeIds: Set<Long>) {
+        viewModelScope.launch { repository.deleteHikes(hikeIds) }
+    }
+
     /**
      * Importe un ou plusieurs fichiers sélectionnés d'un coup (sélecteur système en mode
      * multi-sélection) : chaque `uri` est soit un `.gpx` direct, soit un `.zip` en contenant

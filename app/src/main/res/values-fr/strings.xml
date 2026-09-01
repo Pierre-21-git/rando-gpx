@@ -126,4 +126,15 @@
         <item quantity="other">%d randonnées exportées</item>
     </plurals>
     <string name="export_all_error">Échec de l\'export : %s</string>
+
+    <string name="action_select_all">Tout sélectionner</string>
+    <plurals name="selection_count">
+        <item quantity="one">%d randonnée sélectionnée</item>
+        <item quantity="other">%d randonnées sélectionnées</item>
+    </plurals>
+    <string name="dialog_delete_hikes_title">Supprimer ces randonnées ?</string>
+    <plurals name="dialog_delete_hikes_message">
+        <item quantity="one">Cette randonnée sera définitivement supprimée. Cette action est irréversible.</item>
+        <item quantity="other">Ces %d randonnées seront définitivement supprimées. Cette action est irréversible.</item>
+    </plurals>
 </resources>
