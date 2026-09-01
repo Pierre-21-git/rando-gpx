@@ -1,0 +1,1 @@
+Added bulk mountain range assignment in multi-select mode. Added search by name and start/end date filters, collapsible behind a chevron next to the mountain range/year filters.

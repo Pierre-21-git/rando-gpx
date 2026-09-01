@@ -1,0 +1,1 @@
+Ajout de l'assignation de massif en masse en mode sélection multiple. Ajout de la recherche par nom et des filtres de dates début/fin, repliables derrière un chevron à côté des filtres massif/année.
