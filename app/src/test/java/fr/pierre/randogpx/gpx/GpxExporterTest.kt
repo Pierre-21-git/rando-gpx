@@ -74,6 +74,20 @@ class GpxExporterTest {
     }
 
     @Test
+    fun `massif extension is emitted when a massif name is provided`() {
+        val xml = GpxExporter.buildGpxXml(hike, points, massifName = "Jura")
+
+        assertTrue(xml.contains("<randogpx:massif>Jura</randogpx:massif>"))
+    }
+
+    @Test
+    fun `massif extension is omitted when no massif is provided`() {
+        val xml = GpxExporter.buildGpxXml(hike, points)
+
+        assertFalse(xml.contains("randogpx:massif"))
+    }
+
+    @Test
     fun `emits one trkpt per point in order`() {
         val xml = GpxExporter.buildGpxXml(hike, points)
 

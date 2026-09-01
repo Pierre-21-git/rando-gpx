@@ -42,6 +42,9 @@ interface MassifDao {
 
     @Query("SELECT * FROM massifs ORDER BY name ASC")
     fun getAllMassifs(): Flow<List<Massif>>
+
+    @Query("SELECT * FROM massifs WHERE name = :name LIMIT 1")
+    suspend fun findByName(name: String): Massif?
 }
 
 @Dao

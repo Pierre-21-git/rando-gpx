@@ -112,9 +112,18 @@
     <string name="filter_no_massif">None</string>
     <string name="filter_all_years">All</string>
 
-    <string name="action_import_gpx">Import a GPX file</string>
-    <string name="content_desc_import_gpx">Import a GPX file</string>
-    <string name="import_gpx_success">Hike imported: %s</string>
-    <string name="import_gpx_error">Import failed: %s</string>
-    <string name="import_gpx_empty_track">This GPX file has no track points.</string>
+    <string name="action_import_gpx">Import hikes (GPX)</string>
+    <string name="content_desc_import_gpx">Import hikes (GPX)</string>
+    <string name="import_gpx_bulk_summary">%1$d hike(s) imported, %2$d failed</string>
+
+    <string name="action_export_all_gpx">Export all hikes</string>
+    <string name="dialog_export_all_title">Export all hikes</string>
+    <string name="dialog_export_all_message">Choose the export format.</string>
+    <string name="action_export_separate_files">Separate files</string>
+    <string name="action_export_zip">Zip file</string>
+    <plurals name="export_all_success">
+        <item quantity="one">%d hike exported</item>
+        <item quantity="other">%d hikes exported</item>
+    </plurals>
+    <string name="export_all_error">Export failed: %s</string>
 </resources>

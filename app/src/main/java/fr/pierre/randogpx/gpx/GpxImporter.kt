@@ -24,6 +24,8 @@ object GpxImporter {
 
     data class ParsedTrack(
         val name: String?,
+        /** Nom du massif s'il était porté par l'extension GPX `randogpx:massif` (voir [GpxExporter]), sinon `null`. */
+        val massifName: String? = null,
         val points: List<ParsedPoint>
     )
 
@@ -38,12 +40,17 @@ object GpxImporter {
         val document = DocumentBuilderFactory.newInstance().newDocumentBuilder()
             .parse(xml.byteInputStream())
 
-        val trackName = document.getElementsByTagName("trk").item(0)
-            ?.let { it as Element }
+        val trkElement = document.getElementsByTagName("trk").item(0)?.let { it as Element }
+
+        val trackName = trkElement
             ?.getElementsByTagName("name")?.item(0)?.textContent
             ?: document.getElementsByTagName("metadata").item(0)
                 ?.let { it as Element }
                 ?.getElementsByTagName("name")?.item(0)?.textContent
+
+        val massifName = trkElement
+            ?.getElementsByTagName("randogpx:massif")?.item(0)?.textContent
+            ?.trim()?.takeIf { it.isNotEmpty() }
 
         val trkptNodes = document.getElementsByTagName("trkpt")
         val points = (0 until trkptNodes.length).map { i ->
@@ -55,7 +62,11 @@ object GpxImporter {
             ParsedPoint(lat = lat, lon = lon, elevation = elevation, timestampMillis = timestamp)
         }
 
-        return ParsedTrack(name = trackName?.trim()?.takeIf { it.isNotEmpty() }, points = points)
+        return ParsedTrack(
+            name = trackName?.trim()?.takeIf { it.isNotEmpty() },
+            massifName = massifName,
+            points = points
+        )
     }
 
     private fun parseGpxTime(text: String): Long? = try {

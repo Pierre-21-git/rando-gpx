@@ -2,9 +2,11 @@ package fr.pierre.randogpx.ui.detail
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.github.mikephil.charting.charts.LineChart
@@ -24,6 +26,11 @@ fun ElevationChart(points: List<TrackPoint>, modifier: Modifier = Modifier) {
     if (points.size < 2) return
 
     val entries = remember(points) { buildElevationEntries(points) }
+    // MPAndroidChart est une vue Android classique, pas liée au thème Material3 : sans ça,
+    // ses libellés d'axes gardent leur couleur par défaut (noir), invisibles sur fond sombre
+    // en mode nuit puisque le graphique lui-même n'a pas de fond opaque.
+    val labelColor = MaterialTheme.colorScheme.onSurface.toArgb()
+    val gridColor = MaterialTheme.colorScheme.onSurfaceVariant.toArgb()
 
     AndroidView(
         modifier = modifier.fillMaxWidth().height(220.dp),
@@ -38,6 +45,10 @@ fun ElevationChart(points: List<TrackPoint>, modifier: Modifier = Modifier) {
             }
         },
         update = { chart ->
+            chart.xAxis.textColor = labelColor
+            chart.xAxis.gridColor = gridColor
+            chart.axisLeft.textColor = labelColor
+            chart.axisLeft.gridColor = gridColor
             val dataSet = LineDataSet(entries, "Altitude (m)").apply {
                 setDrawCircles(false)
                 lineWidth = 2f

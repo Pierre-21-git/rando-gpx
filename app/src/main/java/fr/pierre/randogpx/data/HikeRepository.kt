@@ -22,6 +22,10 @@ class HikeRepository(
 
     suspend fun createMassif(name: String): Long = massifDao.insertMassif(Massif(name = name))
 
+    /** Retrouve un massif existant par son nom exact, ou le crée — utilisé par l'import GPX (extension `randogpx:massif`). */
+    suspend fun getOrCreateMassifByName(name: String): Long =
+        massifDao.findByName(name)?.id ?: massifDao.insertMassif(Massif(name = name))
+
     suspend fun renameMassif(massifId: Long, name: String) = massifDao.renameMassif(massifId, name)
 
     /**

@@ -80,7 +80,8 @@ fun DetailScreen(
     ) { uri ->
         val currentHike = hike
         if (uri != null && currentHike != null) {
-            val xml = GpxExporter.buildGpxXml(currentHike, points)
+            val massifName = massifs.find { it.id == currentHike.massifId }?.name
+            val xml = GpxExporter.buildGpxXml(currentHike, points, massifName)
             context.contentResolver.openOutputStream(uri)?.use { it.write(xml.toByteArray()) }
         }
     }
@@ -202,7 +203,8 @@ fun DetailScreen(
                         }
                         Button(
                             onClick = {
-                                val file = GpxExporter.export(context, currentHike, points)
+                                val massifName = massifs.find { it.id == currentHike.massifId }?.name
+                                val file = GpxExporter.export(context, currentHike, points, massifName)
                                 val uri = GpxExporter.getShareableUri(context, file)
                                 val shareIntent = Intent(Intent.ACTION_SEND).apply {
                                     type = "application/gpx+xml"

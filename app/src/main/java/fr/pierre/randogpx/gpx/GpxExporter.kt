@@ -20,12 +20,17 @@ object GpxExporter {
         timeZone = TimeZone.getTimeZone("UTC")
     }
 
-    fun export(context: Context, hike: Hike, points: List<TrackPoint>): File {
-        val xml = buildGpxXml(hike, points)
+    /** Nom de fichier standard `<nom-normalisé>_<startTime>.gpx`, réutilisé pour un export unique ou groupé. */
+    fun fileName(hike: Hike): String {
+        val safeName = hike.name.replace(Regex("[^A-Za-z0-9_-]"), "_")
+        return "${safeName}_${hike.startTime}.gpx"
+    }
+
+    fun export(context: Context, hike: Hike, points: List<TrackPoint>, massifName: String? = null): File {
+        val xml = buildGpxXml(hike, points, massifName)
 
         val exportDir = File(context.getExternalFilesDir(null), "gpx").apply { mkdirs() }
-        val safeName = hike.name.replace(Regex("[^A-Za-z0-9_-]"), "_")
-        val file = File(exportDir, "${safeName}_${hike.startTime}.gpx")
+        val file = File(exportDir, fileName(hike))
         file.writeText(xml)
         return file
     }
@@ -34,13 +39,19 @@ object GpxExporter {
     fun getShareableUri(context: Context, file: File) =
         FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
 
-    /** Visibilité `internal` (plutôt que `private`) pour rester testable en JUnit sans Context Android. */
-    internal fun buildGpxXml(hike: Hike, points: List<TrackPoint>): String {
+    /**
+     * Visibilité `internal` (plutôt que `private`) pour rester testable en JUnit sans Context Android.
+     * [massifName] est porté par une extension GPX non-standard (`randogpx:massif`, dans un
+     * namespace dédié) : le fichier reste un GPX 1.1 valide pour tout autre logiciel, qui
+     * ignorera simplement ce champ qu'il ne connaît pas.
+     */
+    internal fun buildGpxXml(hike: Hike, points: List<TrackPoint>, massifName: String? = null): String {
         val sb = StringBuilder()
         sb.append("""<?xml version="1.0" encoding="UTF-8" standalone="yes"?>""").append('\n')
         sb.append(
             """<gpx version="1.1" creator="RandoGPX" xmlns="http://www.topografix.com/GPX/1/1" """ +
                 """xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" """ +
+                """xmlns:randogpx="https://github.com/Pierre-21-git/rando-gpx" """ +
                 """xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">"""
         ).append('\n')
 
@@ -51,6 +62,11 @@ object GpxExporter {
 
         sb.append("  <trk>\n")
         sb.append("    <name>${escapeXml(hike.name)}</name>\n")
+        if (massifName != null) {
+            sb.append("    <extensions>\n")
+            sb.append("      <randogpx:massif>${escapeXml(massifName)}</randogpx:massif>\n")
+            sb.append("    </extensions>\n")
+        }
         sb.append("    <trkseg>\n")
 
         for (point in points) {

@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.FileUpload
 import androidx.compose.material.icons.filled.Hiking
 import androidx.compose.material.icons.filled.Info
@@ -67,23 +68,59 @@ fun HistoryScreen(
     val selectedMassifId by viewModel.selectedMassifId.collectAsState()
     val selectedYear by viewModel.selectedYear.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+    var showExportFormatChoice by remember { mutableStateOf(false) }
 
-    val importLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-        uri?.let { viewModel.importGpx(context, it) }
+    val importLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { uris ->
+        if (uris.isNotEmpty()) viewModel.importMultiple(context, uris)
+    }
+    val exportFolderLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { treeUri ->
+        treeUri?.let { viewModel.exportAllToFolder(context, it, hikes, massifs) }
+    }
+    val exportZipLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/zip")) { uri ->
+        uri?.let { viewModel.exportAllToZip(context, it, hikes, massifs) }
     }
 
     LaunchedEffect(Unit) {
         viewModel.importResult.collect { result ->
+            val message = context.getString(R.string.import_gpx_bulk_summary, result.successCount, result.errorCount)
+            snackbarHostState.showSnackbar(message)
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.exportResult.collect { result ->
             val message = when (result) {
-                is HistoryViewModel.ImportResult.Success ->
-                    context.getString(R.string.import_gpx_success, result.hikeName)
-                is HistoryViewModel.ImportResult.Error ->
-                    context.getString(R.string.import_gpx_error, result.message)
-                HistoryViewModel.ImportResult.EmptyTrack ->
-                    context.getString(R.string.import_gpx_empty_track)
+                is HistoryViewModel.ExportResult.Success ->
+                    context.resources.getQuantityString(R.plurals.export_all_success, result.count, result.count)
+                is HistoryViewModel.ExportResult.Error ->
+                    context.getString(R.string.export_all_error, result.message)
             }
             snackbarHostState.showSnackbar(message)
         }
+    }
+
+    if (showExportFormatChoice) {
+        AlertDialog(
+            onDismissRequest = { showExportFormatChoice = false },
+            title = { Text(stringResource(R.string.dialog_export_all_title)) },
+            text = { Text(stringResource(R.string.dialog_export_all_message)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    showExportFormatChoice = false
+                    exportZipLauncher.launch(zipFileName())
+                }) {
+                    Text(stringResource(R.string.action_export_zip))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    showExportFormatChoice = false
+                    exportFolderLauncher.launch(null)
+                }) {
+                    Text(stringResource(R.string.action_export_separate_files))
+                }
+            }
+        )
     }
 
     val years = remember(hikes) { hikes.map { yearOf(it.startTime) }.distinct().sortedDescending() }
@@ -105,7 +142,8 @@ fun HistoryScreen(
                 title = { Text(stringResource(R.string.screen_history)) },
                 actions = {
                     OverflowMenu(
-                        onImportGpx = { importLauncher.launch("*/*") },
+                        onImportGpx = { importLauncher.launch(arrayOf("*/*")) },
+                        onExportAllGpx = { showExportFormatChoice = true },
                         onManageMassifs = onManageMassifs,
                         onOpenOfflineAreas = onOpenOfflineAreas,
                         onOpenAbout = onOpenAbout
@@ -162,10 +200,11 @@ fun HistoryScreen(
     }
 }
 
-/** Regroupe les actions secondaires de l'écran (import, massifs, cartes hors ligne, à propos). */
+/** Regroupe les actions secondaires de l'écran (import/export, massifs, cartes hors ligne, à propos). */
 @Composable
 private fun OverflowMenu(
     onImportGpx: () -> Unit,
+    onExportAllGpx: () -> Unit,
     onManageMassifs: () -> Unit,
     onOpenOfflineAreas: () -> Unit,
     onOpenAbout: () -> Unit
@@ -180,6 +219,11 @@ private fun OverflowMenu(
                 text = { Text(stringResource(R.string.action_import_gpx)) },
                 leadingIcon = { Icon(Icons.Default.FileUpload, contentDescription = null) },
                 onClick = { expanded = false; onImportGpx() }
+            )
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.action_export_all_gpx)) },
+                leadingIcon = { Icon(Icons.Default.FileDownload, contentDescription = null) },
+                onClick = { expanded = false; onExportAllGpx() }
             )
             DropdownMenuItem(
                 text = { Text(stringResource(R.string.action_manage_massifs)) },
@@ -385,6 +429,9 @@ private fun formatDate(timestampMillis: Long): String =
 
 private fun yearOf(timestampMillis: Long): Int =
     Calendar.getInstance().apply { timeInMillis = timestampMillis }.get(Calendar.YEAR)
+
+private fun zipFileName(): String =
+    "randogpx_${SimpleDateFormat("yyyyMMdd_HHmm", Locale.US).format(Date())}.zip"
 
 /** Sentinelle du filtre massif pour "Aucun massif", distincte de `null` qui veut dire "Tous" — les id réels démarrent à 1. */
 private const val NO_MASSIF_FILTER_ID = -1L

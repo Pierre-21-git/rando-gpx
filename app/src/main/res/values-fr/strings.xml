@@ -112,9 +112,18 @@
     <string name="filter_no_massif">Aucun</string>
     <string name="filter_all_years">Toutes</string>
 
-    <string name="action_import_gpx">Importer un fichier GPX</string>
-    <string name="content_desc_import_gpx">Importer un fichier GPX</string>
-    <string name="import_gpx_success">Randonnée importée : %s</string>
-    <string name="import_gpx_error">Échec de l\'import : %s</string>
-    <string name="import_gpx_empty_track">Ce fichier GPX ne contient aucun point de tracé.</string>
+    <string name="action_import_gpx">Importer des randonnées (GPX)</string>
+    <string name="content_desc_import_gpx">Importer des randonnées (GPX)</string>
+    <string name="import_gpx_bulk_summary">%1$d randonnée(s) importée(s), %2$d échec(s)</string>
+
+    <string name="action_export_all_gpx">Exporter toutes les randonnées</string>
+    <string name="dialog_export_all_title">Exporter toutes les randonnées</string>
+    <string name="dialog_export_all_message">Choisissez le format d\'export.</string>
+    <string name="action_export_separate_files">Fichiers séparés</string>
+    <string name="action_export_zip">Fichier zip</string>
+    <plurals name="export_all_success">
+        <item quantity="one">%d randonnée exportée</item>
+        <item quantity="other">%d randonnées exportées</item>
+    </plurals>
+    <string name="export_all_error">Échec de l\'export : %s</string>
 </resources>

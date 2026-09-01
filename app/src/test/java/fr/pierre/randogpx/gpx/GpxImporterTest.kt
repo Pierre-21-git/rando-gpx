@@ -69,12 +69,20 @@ class GpxImporterTest {
             TrackPoint(hikeId = 1L, lat = 45.8330, lon = 6.8660, altitudeGps = 1040.0, altitudeCorrected = 992.1, timestamp = 1_724_830_005_000L)
         )
 
-        val xml = GpxExporter.buildGpxXml(hike, points)
+        val xml = GpxExporter.buildGpxXml(hike, points, massifName = "Jura")
         val reimported = GpxImporter.parse(xml)
 
         assertEquals("Randonnée test", reimported.name)
+        assertEquals("Jura", reimported.massifName)
         assertEquals(points.size, reimported.points.size)
         assertEquals(987.4, reimported.points[0].elevation!!, 1e-9)
         assertEquals(1_724_830_000_000L, reimported.points[0].timestampMillis)
+    }
+
+    @Test
+    fun `massif name is null when the extension is absent`() {
+        val track = GpxImporter.parse(sampleXml)
+
+        assertNull(track.massifName)
     }
 }
