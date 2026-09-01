@@ -137,4 +137,15 @@
         <item quantity="one">This hike will be permanently deleted. This cannot be undone.</item>
         <item quantity="other">These %d hikes will be permanently deleted. This cannot be undone.</item>
     </plurals>
+
+    <string name="action_assign_massif">Assign a mountain range</string>
+    <string name="dialog_assign_massif_title">Assign a mountain range</string>
+
+    <string name="action_show_filters">Show filters</string>
+    <string name="action_hide_filters">Hide filters</string>
+    <string name="filter_search_placeholder">Search a hike…</string>
+    <string name="filter_start_date_label">Start date</string>
+    <string name="filter_end_date_label">End date</string>
+    <string name="action_apply">Apply</string>
+    <string name="action_clear_filter">Clear</string>
 </resources>

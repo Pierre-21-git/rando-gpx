@@ -14,7 +14,10 @@ import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.FileUpload
 import androidx.compose.material.icons.filled.Hiking
@@ -24,6 +27,7 @@ import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
 import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material.icons.filled.Straighten
 import androidx.compose.material.icons.filled.Terrain
@@ -55,6 +59,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import java.util.TimeZone
 import java.util.concurrent.TimeUnit
 
 @Composable
@@ -75,10 +80,15 @@ fun HistoryScreen(
     val massifs by viewModel.massifs.collectAsState()
     val selectedMassifId by viewModel.selectedMassifId.collectAsState()
     val selectedYear by viewModel.selectedYear.collectAsState()
+    val searchQuery by viewModel.searchQuery.collectAsState()
+    val startDateMillis by viewModel.startDateMillis.collectAsState()
+    val endDateMillis by viewModel.endDateMillis.collectAsState()
+    val filtersExpanded by viewModel.filtersExpanded.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     var showExportFormatChoice by remember { mutableStateOf(false) }
     var selectedIds by remember { mutableStateOf<Set<Long>>(emptySet()) }
     var showBulkDeleteConfirmation by remember { mutableStateOf(false) }
+    var showMassifAssignDialog by remember { mutableStateOf(false) }
     val isSelectionMode = selectedIds.isNotEmpty()
 
     BackHandler(enabled = isSelectionMode) { selectedIds = emptySet() }
@@ -160,15 +170,58 @@ fun HistoryScreen(
         )
     }
 
+    if (showMassifAssignDialog) {
+        AlertDialog(
+            onDismissRequest = { showMassifAssignDialog = false },
+            title = { Text(stringResource(R.string.dialog_assign_massif_title)) },
+            text = {
+                Column {
+                    TextButton(
+                        onClick = {
+                            viewModel.assignMassifToHikes(selectedIds, null)
+                            selectedIds = emptySet()
+                            showMassifAssignDialog = false
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(stringResource(R.string.massif_none), modifier = Modifier.fillMaxWidth())
+                    }
+                    massifs.forEach { massif ->
+                        TextButton(
+                            onClick = {
+                                viewModel.assignMassifToHikes(selectedIds, massif.id)
+                                selectedIds = emptySet()
+                                showMassifAssignDialog = false
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(massif.name, modifier = Modifier.fillMaxWidth())
+                        }
+                    }
+                }
+            },
+            confirmButton = {},
+            dismissButton = {
+                TextButton(onClick = { showMassifAssignDialog = false }) {
+                    Text(stringResource(R.string.action_cancel))
+                }
+            }
+        )
+    }
+
     val years = remember(hikes) { hikes.map { yearOf(it.startTime) }.distinct().sortedDescending() }
-    val filteredHikes = remember(hikes, selectedMassifId, selectedYear) {
+    val filteredHikes = remember(hikes, selectedMassifId, selectedYear, searchQuery, startDateMillis, endDateMillis) {
         hikes.filter { hike ->
             val massifMatches = when (selectedMassifId) {
                 null -> true
                 NO_MASSIF_FILTER_ID -> hike.massifId == null
                 else -> hike.massifId == selectedMassifId
             }
-            massifMatches && (selectedYear == null || yearOf(hike.startTime) == selectedYear)
+            val yearMatches = selectedYear == null || yearOf(hike.startTime) == selectedYear
+            val nameMatches = searchQuery.isBlank() || hike.name.contains(searchQuery, ignoreCase = true)
+            val afterStart = startDateMillis == null || hike.startTime >= startDateMillis!!
+            val beforeEnd = endDateMillis == null || hike.startTime <= endDateMillis!!
+            massifMatches && yearMatches && nameMatches && afterStart && beforeEnd
         }
     }
 
@@ -186,6 +239,9 @@ fun HistoryScreen(
                     actions = {
                         IconButton(onClick = { selectedIds = filteredHikes.map { it.id }.toSet() }) {
                             Icon(Icons.Default.SelectAll, contentDescription = stringResource(R.string.action_select_all))
+                        }
+                        IconButton(onClick = { showMassifAssignDialog = true }) {
+                            Icon(Icons.Default.Terrain, contentDescription = stringResource(R.string.action_assign_massif))
                         }
                         IconButton(onClick = { showBulkDeleteConfirmation = true }) {
                             Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.action_delete))
@@ -227,14 +283,30 @@ fun HistoryScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     SummaryCard(filteredHikes)
-                    FilterRow(
-                        massifs = massifs,
-                        years = years,
-                        selectedMassifId = selectedMassifId,
-                        selectedYear = selectedYear,
-                        onMassifSelected = { viewModel.selectMassifFilter(it) },
-                        onYearSelected = { viewModel.selectYearFilter(it) }
-                    )
+                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        FilterRow(
+                            massifs = massifs,
+                            years = years,
+                            selectedMassifId = selectedMassifId,
+                            selectedYear = selectedYear,
+                            onMassifSelected = { viewModel.selectMassifFilter(it) },
+                            onYearSelected = { viewModel.selectYearFilter(it) },
+                            filtersExpanded = filtersExpanded,
+                            onToggleFilters = { viewModel.toggleFiltersExpanded() }
+                        )
+                        if (filtersExpanded) {
+                            SearchField(
+                                query = searchQuery,
+                                onQueryChange = { viewModel.updateSearchQuery(it) }
+                            )
+                            DateRangeRow(
+                                startDateMillis = startDateMillis,
+                                endDateMillis = endDateMillis,
+                                onStartDateSelected = { viewModel.selectStartDate(it) },
+                                onEndDateSelected = { viewModel.selectEndDate(it) }
+                            )
+                        }
+                    }
                 }
                 LazyColumn(
                     state = listState,
@@ -314,15 +386,135 @@ private fun OverflowMenu(
 }
 
 @Composable
+private fun SearchField(query: String, onQueryChange: (String) -> Unit) {
+    OutlinedTextField(
+        value = query,
+        onValueChange = onQueryChange,
+        modifier = Modifier.fillMaxWidth().height(48.dp),
+        placeholder = { Text(stringResource(R.string.filter_search_placeholder), style = MaterialTheme.typography.bodySmall) },
+        textStyle = MaterialTheme.typography.bodySmall,
+        leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, modifier = Modifier.size(18.dp)) },
+        trailingIcon = {
+            if (query.isNotEmpty()) {
+                IconButton(onClick = { onQueryChange("") }, modifier = Modifier.size(32.dp)) {
+                    Icon(Icons.Default.Close, contentDescription = stringResource(R.string.action_cancel), modifier = Modifier.size(16.dp))
+                }
+            }
+        },
+        singleLine = true
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun DateRangeRow(
+    startDateMillis: Long?,
+    endDateMillis: Long?,
+    onStartDateSelected: (Long?) -> Unit,
+    onEndDateSelected: (Long?) -> Unit
+) {
+    var showStartPicker by remember { mutableStateOf(false) }
+    var showEndPicker by remember { mutableStateOf(false) }
+
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        AssistChip(
+            onClick = { showStartPicker = true },
+            label = {
+                Text(
+                    startDateMillis?.let { formatDateOnly(it) } ?: stringResource(R.string.filter_start_date_label),
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                )
+            },
+            leadingIcon = { Icon(Icons.Default.DateRange, contentDescription = null, modifier = Modifier.size(18.dp)) },
+            modifier = Modifier.weight(1f)
+        )
+        AssistChip(
+            onClick = { showEndPicker = true },
+            label = {
+                Text(
+                    endDateMillis?.let { formatDateOnly(it) } ?: stringResource(R.string.filter_end_date_label),
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                )
+            },
+            leadingIcon = { Icon(Icons.Default.DateRange, contentDescription = null, modifier = Modifier.size(18.dp)) },
+            modifier = Modifier.weight(1f)
+        )
+    }
+
+    if (showStartPicker) {
+        DateFilterPickerDialog(
+            initialMillis = startDateMillis,
+            onDismiss = { showStartPicker = false },
+            onConfirm = { picked ->
+                onStartDateSelected(picked?.let(::startOfDayMillis))
+                showStartPicker = false
+            },
+            onClear = {
+                onStartDateSelected(null)
+                showStartPicker = false
+            }
+        )
+    }
+    if (showEndPicker) {
+        DateFilterPickerDialog(
+            initialMillis = endDateMillis,
+            onDismiss = { showEndPicker = false },
+            onConfirm = { picked ->
+                onEndDateSelected(picked?.let(::endOfDayMillis))
+                showEndPicker = false
+            },
+            onClear = {
+                onEndDateSelected(null)
+                showEndPicker = false
+            }
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun DateFilterPickerDialog(
+    initialMillis: Long?,
+    onDismiss: () -> Unit,
+    onConfirm: (Long?) -> Unit,
+    onClear: () -> Unit
+) {
+    val datePickerState = rememberDatePickerState(initialSelectedDateMillis = initialMillis)
+    DatePickerDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(onClick = { onConfirm(datePickerState.selectedDateMillis) }) {
+                Text(stringResource(R.string.action_apply))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onClear) {
+                Text(stringResource(R.string.action_clear_filter))
+            }
+        }
+    ) {
+        DatePicker(state = datePickerState)
+    }
+}
+
+@Composable
 private fun FilterRow(
     massifs: List<Massif>,
     years: List<Int>,
     selectedMassifId: Long?,
     selectedYear: Int?,
     onMassifSelected: (Long?) -> Unit,
-    onYearSelected: (Int?) -> Unit
+    onYearSelected: (Int?) -> Unit,
+    filtersExpanded: Boolean,
+    onToggleFilters: () -> Unit
 ) {
-    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
         FilterDropdown(
             label = stringResource(R.string.filter_massif_label),
             selectedLabel = when (selectedMassifId) {
@@ -345,6 +537,12 @@ private fun FilterRow(
             onSelected = onYearSelected,
             modifier = Modifier.weight(1f)
         )
+        IconButton(onClick = onToggleFilters, modifier = Modifier.size(40.dp)) {
+            Icon(
+                imageVector = if (filtersExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                contentDescription = stringResource(if (filtersExpanded) R.string.action_hide_filters else R.string.action_show_filters)
+            )
+        }
     }
 }
 
@@ -522,8 +720,33 @@ private fun formatDuration(hike: Hike): String {
 private fun formatDate(timestampMillis: Long): String =
     SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.getDefault()).format(Date(timestampMillis))
 
+private fun formatDateOnly(timestampMillis: Long): String =
+    SimpleDateFormat("dd MMM yyyy", Locale.getDefault()).format(Date(timestampMillis))
+
 private fun yearOf(timestampMillis: Long): Int =
     Calendar.getInstance().apply { timeInMillis = timestampMillis }.get(Calendar.YEAR)
+
+/**
+ * Le sélecteur Material3 renvoie un timestamp à minuit UTC pour le jour choisi ; on le
+ * reconvertit vers le début/la fin de ce même jour calendaire dans le fuseau local, pour
+ * comparer correctement à `Hike.startTime` (qui suit la même convention que [yearOf]).
+ */
+private fun startOfDayMillis(pickedUtcMidnightMillis: Long): Long {
+    val utcCal = Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply { timeInMillis = pickedUtcMidnightMillis }
+    return Calendar.getInstance().apply {
+        clear()
+        set(utcCal.get(Calendar.YEAR), utcCal.get(Calendar.MONTH), utcCal.get(Calendar.DAY_OF_MONTH), 0, 0, 0)
+    }.timeInMillis
+}
+
+private fun endOfDayMillis(pickedUtcMidnightMillis: Long): Long {
+    val utcCal = Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply { timeInMillis = pickedUtcMidnightMillis }
+    return Calendar.getInstance().apply {
+        clear()
+        set(utcCal.get(Calendar.YEAR), utcCal.get(Calendar.MONTH), utcCal.get(Calendar.DAY_OF_MONTH), 23, 59, 59)
+        set(Calendar.MILLISECOND, 999)
+    }.timeInMillis
+}
 
 private fun zipFileName(): String =
     "randogpx_${SimpleDateFormat("yyyyMMdd_HHmm", Locale.US).format(Date())}.zip"

@@ -41,6 +41,18 @@ class HistoryViewModel(private val repository: HikeRepository) : ViewModel() {
     private val _selectedYear = MutableStateFlow<Int?>(null)
     val selectedYear: StateFlow<Int?> = _selectedYear.asStateFlow()
 
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
+
+    private val _startDateMillis = MutableStateFlow<Long?>(null)
+    val startDateMillis: StateFlow<Long?> = _startDateMillis.asStateFlow()
+
+    private val _endDateMillis = MutableStateFlow<Long?>(null)
+    val endDateMillis: StateFlow<Long?> = _endDateMillis.asStateFlow()
+
+    private val _filtersExpanded = MutableStateFlow(false)
+    val filtersExpanded: StateFlow<Boolean> = _filtersExpanded.asStateFlow()
+
     private val _importResult = MutableSharedFlow<ImportSummary>()
     val importResult: SharedFlow<ImportSummary> = _importResult
 
@@ -53,6 +65,22 @@ class HistoryViewModel(private val repository: HikeRepository) : ViewModel() {
 
     fun selectYearFilter(year: Int?) {
         _selectedYear.value = year
+    }
+
+    fun updateSearchQuery(query: String) {
+        _searchQuery.value = query
+    }
+
+    fun selectStartDate(millis: Long?) {
+        _startDateMillis.value = millis
+    }
+
+    fun selectEndDate(millis: Long?) {
+        _endDateMillis.value = millis
+    }
+
+    fun toggleFiltersExpanded() {
+        _filtersExpanded.value = !_filtersExpanded.value
     }
 
     /** Résultat d'un import (un ou plusieurs fichiers, épars ou dans un zip) : compte simple, pas de détail par fichier. */
@@ -69,6 +97,10 @@ class HistoryViewModel(private val repository: HikeRepository) : ViewModel() {
 
     fun deleteHikes(hikeIds: Set<Long>) {
         viewModelScope.launch { repository.deleteHikes(hikeIds) }
+    }
+
+    fun assignMassifToHikes(hikeIds: Set<Long>, massifId: Long?) {
+        viewModelScope.launch { repository.setMassifForHikes(hikeIds, massifId) }
     }
 
     /**

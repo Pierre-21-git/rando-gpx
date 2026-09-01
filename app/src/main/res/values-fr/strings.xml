@@ -137,4 +137,15 @@
         <item quantity="one">Cette randonnée sera définitivement supprimée. Cette action est irréversible.</item>
         <item quantity="other">Ces %d randonnées seront définitivement supprimées. Cette action est irréversible.</item>
     </plurals>
+
+    <string name="action_assign_massif">Assigner un massif</string>
+    <string name="dialog_assign_massif_title">Assigner un massif</string>
+
+    <string name="action_show_filters">Afficher les filtres</string>
+    <string name="action_hide_filters">Masquer les filtres</string>
+    <string name="filter_search_placeholder">Rechercher une randonnée…</string>
+    <string name="filter_start_date_label">Date de début</string>
+    <string name="filter_end_date_label">Date de fin</string>
+    <string name="action_apply">Appliquer</string>
+    <string name="action_clear_filter">Effacer</string>
 </resources>

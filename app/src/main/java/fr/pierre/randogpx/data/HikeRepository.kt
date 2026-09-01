@@ -50,6 +50,10 @@ class HikeRepository(
         hikeDao.updateHike(hike.copy(massifId = massifId))
     }
 
+    suspend fun setMassifForHikes(hikeIds: Collection<Long>, massifId: Long?) {
+        hikeIds.forEach { setHikeMassif(it, massifId) }
+    }
+
     suspend fun getHikeById(hikeId: Long): Hike? = hikeDao.getHikeById(hikeId)
 
     suspend fun getPointsForHike(hikeId: Long): List<TrackPoint> =
