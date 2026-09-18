@@ -1,0 +1,1 @@
+Retrait de la permission de localisation en arrière-plan, inutile (le suivi écran éteint fonctionne déjà sans elle). Ajout de la mention légale sur la carte, de la source des données d'altitude, et d'une confirmation avant les gros téléchargements de cartes hors-ligne.

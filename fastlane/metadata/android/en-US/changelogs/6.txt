@@ -1,0 +1,1 @@
+Removed the unnecessary background-location permission (screen-off tracking already works without it). Added on-screen map attribution, disclosed the elevation data source, and added a confirmation before large offline map downloads.
