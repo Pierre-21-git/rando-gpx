@@ -90,22 +90,6 @@ fun RecordingScreen(
         }
     }
 
-    // Suivi en arrière-plan (écran éteint / app en tâche de fond) : sur Android 10+,
-    // c'est une permission distincte qu'il faut demander séparément de la localisation
-    // "en cours d'utilisation", après coup et avec une justification claire — la demander
-    // en même temps que le reste est refusé silencieusement par le système sur beaucoup
-    // d'appareils. Optionnelle : l'app reste utilisable au premier plan sans elle.
-    var hasBackgroundLocationPermission by remember {
-        mutableStateOf(
-            Build.VERSION.SDK_INT < Build.VERSION_CODES.Q ||
-                ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_BACKGROUND_LOCATION) ==
-                    PackageManager.PERMISSION_GRANTED
-        )
-    }
-    val backgroundPermissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { granted -> hasBackgroundLocationPermission = granted }
-
     // Optimisation batterie : sur de nombreux OEM (Xiaomi, Huawei...), le Foreground
     // Service peut être tué malgré tout si l'app n'est pas exemptée. On ne peut que
     // rediriger vers les réglages système (aucune permission spéciale requise pour
@@ -122,9 +106,6 @@ fun RecordingScreen(
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
-                hasBackgroundLocationPermission = Build.VERSION.SDK_INT < Build.VERSION_CODES.Q ||
-                    ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_BACKGROUND_LOCATION) ==
-                        PackageManager.PERMISSION_GRANTED
                 isIgnoringBatteryOptimizations = powerManager.isIgnoringBatteryOptimizations(context.packageName)
             }
         }
@@ -191,6 +172,7 @@ fun RecordingScreen(
                         setMultiTouchControls(true)
                         controller.setZoom(15.0)
                         overlays.add(trackPolyline)
+                        overlays.add(OsmdroidConfigurator.copyrightOverlay(ctx))
                     }
                 },
                 update = { mapView ->
@@ -236,15 +218,11 @@ fun RecordingScreen(
                 )
             }
 
-            // --- Conseils optionnels : n'empêchent pas d'enregistrer, mais fiabilisent
-            // le suivi écran éteint / longue durée en tâche de fond. ---
-            if (hasLocationPermission && !hasBackgroundLocationPermission) {
-                AdviceRow(
-                    text = stringResourceCompat(R.string.advice_background_location_text),
-                    actionLabel = stringResourceCompat(R.string.action_enable),
-                    onAction = { backgroundPermissionLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION) }
-                )
-            }
+            // --- Conseil optionnel : n'empêche pas d'enregistrer, mais fiabilise le
+            // suivi écran éteint / longue durée en tâche de fond (le Foreground Service
+            // de type location continue déjà de recevoir des positions écran éteint sans
+            // ACCESS_BACKGROUND_LOCATION ; seule l'optimisation batterie de certains OEM
+            // peut interrompre le suivi). ---
             if (!isIgnoringBatteryOptimizations) {
                 AdviceRow(
                     text = stringResourceCompat(R.string.advice_battery_text),

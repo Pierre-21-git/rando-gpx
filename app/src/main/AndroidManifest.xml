@@ -4,7 +4,6 @@
     <!-- Géolocalisation -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
 
     <!-- Foreground Service (Android 14+ nécessite le type explicite) -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />

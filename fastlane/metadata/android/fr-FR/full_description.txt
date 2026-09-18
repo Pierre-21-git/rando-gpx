@@ -4,7 +4,7 @@ Fonctionnalités principales :
 
 * Enregistrement GPS en arrière-plan (écran éteint) via un service au premier plan, avec notification affichant distance et durée en direct
 * Tracé en direct sur une carte (fonds OpenTopoMap, adaptés à la randonnée)
-* Correction d'altitude par géoïde EGM96, pour un dénivelé plus fidèle que l'altitude GPS brute
+* Correction d'altitude à partir de tuiles de terrain publiques (AWS Open Data, dérivées de SRTM, mises en cache sur l'appareil) affinées par le géoïde EGM96 embarqué hors-ligne, pour un dénivelé plus fidèle que l'altitude GPS brute
 * Export au format GPX 1.1 standard, réutilisable dans n'importe quel autre outil de randonnée
 * Historique des randonnées avec statistiques détaillées : distance, dénivelé positif/négatif, vitesse moyenne et maximale, altitude minimale et maximale, durée
 * Visualisation du tracé complet sur une carte et profil d'élévation pour chaque randonnée

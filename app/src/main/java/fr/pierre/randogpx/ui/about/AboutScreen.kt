@@ -89,6 +89,20 @@ fun AboutScreen(onBack: () -> Unit) {
                     )
                 }
             }
+
+            HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
+
+            Text(
+                stringResource(R.string.about_data_sources_label),
+                style = MaterialTheme.typography.titleSmall,
+                modifier = Modifier.align(Alignment.Start)
+            )
+            Spacer(Modifier.height(6.dp))
+            Text(
+                stringResource(R.string.about_data_sources_text),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }

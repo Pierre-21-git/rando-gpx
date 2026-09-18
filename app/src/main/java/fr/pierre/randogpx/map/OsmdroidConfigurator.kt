@@ -4,6 +4,7 @@ import android.content.Context
 import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.tilesource.XYTileSource
 import org.osmdroid.tileprovider.tilesource.ITileSource
+import org.osmdroid.views.overlay.CopyrightOverlay
 
 /**
  * Configuration globale d'osmdroid : user-agent obligatoire (sinon tuiles refusées par
@@ -35,4 +36,15 @@ object OsmdroidConfigurator {
         ),
         "© OpenTopoMap (CC-BY-SA) © OpenStreetMap contributors"
     )
+
+    /**
+     * Overlay affichant la mention de copyright de [openTopoMapSource] directement sur
+     * la carte, comme le demande la FAQ OpenTopoMap ("Kartendaten [...] Kartendarstellung
+     * [...] doit rester clairement visible"). À ajouter aux overlays de chaque MapView.
+     */
+    fun copyrightOverlay(context: Context): CopyrightOverlay =
+        CopyrightOverlay(context).apply {
+            setCopyrightNotice(openTopoMapSource.copyrightNotice)
+            setTextSize(10)
+        }
 }

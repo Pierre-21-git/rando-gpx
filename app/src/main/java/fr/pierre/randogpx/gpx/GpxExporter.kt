@@ -76,7 +76,7 @@ object GpxExporter {
             sb.append("        <time>${isoFormat.format(java.util.Date(point.timestamp))}</time>\n")
             point.speed?.let {
                 sb.append("        <extensions>\n")
-                sb.append("          <speed>${"%.2f".format(Locale.US, it)}</speed>\n")
+                sb.append("          <randogpx:speed>${"%.2f".format(Locale.US, it)}</randogpx:speed>\n")
                 sb.append("        </extensions>\n")
             }
             sb.append("      </trkpt>\n")

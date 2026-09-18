@@ -352,6 +352,7 @@ private fun HikeRouteMap(points: List<TrackPoint>) {
             MapView(ctx).apply {
                 setTileSource(OsmdroidConfigurator.openTopoMapSource)
                 setMultiTouchControls(true)
+                overlays.add(OsmdroidConfigurator.copyrightOverlay(ctx))
 
                 val geoPoints = points.map { GeoPoint(it.lat, it.lon) }
                 overlays.add(

@@ -16,7 +16,11 @@ import androidx.compose.ui.viewinterop.AndroidView
 import fr.pierre.randogpx.R
 import fr.pierre.randogpx.map.OfflineTileManager
 import fr.pierre.randogpx.map.OsmdroidConfigurator
+import org.osmdroid.util.BoundingBox
 import org.osmdroid.views.MapView
+
+/** Au-delà de ce nombre de tuiles, une confirmation est demandée avant de lancer le téléchargement. */
+private const val LARGE_DOWNLOAD_TILE_THRESHOLD = 500
 
 /**
  * Écran de sélection d'une zone à télécharger pour un usage hors-ligne.
@@ -35,7 +39,28 @@ fun OfflineAreaScreen(onBack: () -> Unit) {
     var maxZoom by remember { mutableFloatStateOf(16f) }
     var estimatedTiles by remember { mutableStateOf<Int?>(null) }
     var downloadState by remember { mutableStateOf<DownloadUiState>(DownloadUiState.Idle) }
+    var pendingLargeDownload by remember { mutableStateOf<PendingDownload?>(null) }
     val mapViewState = remember { mutableStateOf<MapView?>(null) }
+
+    fun startDownload(manager: OfflineTileManager, boundingBox: BoundingBox, minZ: Int, maxZ: Int) {
+        downloadState = DownloadUiState.InProgress(0)
+        manager.downloadArea(
+            boundingBox,
+            minZ,
+            maxZ,
+            object : OfflineTileManager.DownloadCallback {
+                override fun onProgress(current: Int, total: Int) {
+                    downloadState = DownloadUiState.InProgress(current)
+                }
+                override fun onComplete() {
+                    downloadState = DownloadUiState.Done
+                }
+                override fun onError(message: String) {
+                    downloadState = DownloadUiState.Error(message)
+                }
+            }
+        )
+    }
 
     Scaffold(
         topBar = {
@@ -59,6 +84,7 @@ fun OfflineAreaScreen(onBack: () -> Unit) {
                             setTileSource(OsmdroidConfigurator.openTopoMapSource)
                             setMultiTouchControls(true)
                             controller.setZoom(13.0)
+                            overlays.add(OsmdroidConfigurator.copyrightOverlay(ctx))
                             mapViewState.value = this
                         }
                     }
@@ -133,28 +159,37 @@ fun OfflineAreaScreen(onBack: () -> Unit) {
                     onClick = {
                         val mapView = mapViewState.value ?: return@Button
                         val manager = OfflineTileManager(mapView)
-                        downloadState = DownloadUiState.InProgress(0)
-                        manager.downloadArea(
-                            mapView.boundingBox,
-                            minZoom.toInt(),
-                            maxZoom.toInt(),
-                            object : OfflineTileManager.DownloadCallback {
-                                override fun onProgress(current: Int, total: Int) {
-                                    downloadState = DownloadUiState.InProgress(current)
-                                }
-                                override fun onComplete() {
-                                    downloadState = DownloadUiState.Done
-                                }
-                                override fun onError(message: String) {
-                                    downloadState = DownloadUiState.Error(message)
-                                }
-                            }
-                        )
+                        val boundingBox = mapView.boundingBox
+                        val minZ = minZoom.toInt()
+                        val maxZ = maxZoom.toInt()
+                        val count = manager.estimateTileCount(boundingBox, minZ, maxZ)
+                        if (count > LARGE_DOWNLOAD_TILE_THRESHOLD) {
+                            pendingLargeDownload = PendingDownload(manager, boundingBox, minZ, maxZ, count)
+                        } else {
+                            startDownload(manager, boundingBox, minZ, maxZ)
+                        }
                     },
                     modifier = Modifier.weight(1f)
                 ) {
                     Text(stringResource(R.string.action_download))
                 }
+            }
+
+            pendingLargeDownload?.let { pending ->
+                AlertDialog(
+                    onDismissRequest = { pendingLargeDownload = null },
+                    title = { Text(stringResource(R.string.offline_area_confirm_large_download_title)) },
+                    text = { Text(stringResource(R.string.offline_area_confirm_large_download_message, pending.tileCount)) },
+                    confirmButton = {
+                        TextButton(onClick = {
+                            pendingLargeDownload = null
+                            startDownload(pending.manager, pending.boundingBox, pending.minZoom, pending.maxZoom)
+                        }) { Text(stringResource(R.string.action_download)) }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { pendingLargeDownload = null }) { Text(stringResource(R.string.action_cancel)) }
+                    }
+                )
             }
 
             when (val state = downloadState) {
@@ -178,6 +213,14 @@ fun OfflineAreaScreen(onBack: () -> Unit) {
         }
     }
 }
+
+private data class PendingDownload(
+    val manager: OfflineTileManager,
+    val boundingBox: BoundingBox,
+    val minZoom: Int,
+    val maxZoom: Int,
+    val tileCount: Int
+)
 
 private sealed class DownloadUiState {
     data object Idle : DownloadUiState()

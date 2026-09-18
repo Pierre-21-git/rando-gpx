@@ -56,9 +56,9 @@ class GpxExporterTest {
     fun `speed extension is only emitted when speed is known`() {
         val xml = GpxExporter.buildGpxXml(hike, points)
 
-        assertTrue(xml.contains("<speed>1.20</speed>"))
-        // Un seul point a une vitesse connue : une seule balise <speed> attendue.
-        assertEquals(1, Regex("<speed>").findAll(xml).count())
+        assertTrue(xml.contains("<randogpx:speed>1.20</randogpx:speed>"))
+        // Un seul point a une vitesse connue : une seule balise <randogpx:speed> attendue.
+        assertEquals(1, Regex("<randogpx:speed>").findAll(xml).count())
     }
 
     @Test

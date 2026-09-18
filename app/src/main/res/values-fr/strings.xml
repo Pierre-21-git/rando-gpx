@@ -13,7 +13,6 @@
     <string name="action_new_hike">Nouvelle randonnée</string>
     <string name="action_estimate">Estimer</string>
     <string name="action_download">Télécharger</string>
-    <string name="action_enable">Activer</string>
     <string name="action_settings">Régler</string>
 
     <string name="screen_history">Mes randonnées</string>
@@ -60,9 +59,8 @@
     <string name="recording_stat_state_paused">Pause</string>
     <string name="recording_stat_state_active">Actif</string>
     <string name="recording_stat_speed">Vitesse</string>
-    <string name="recording_location_permission_required">Autorisation de localisation requise pour enregistrer une randonnée.</string>
+    <string name="recording_location_permission_required">Autorisation de localisation précise requise pour enregistrer une randonnée.</string>
 
-    <string name="advice_background_location_text">Pour continuer le suivi une fois l\'écran éteint, autorisez la localisation « en permanence ».</string>
     <string name="advice_battery_text">Certains téléphones interrompent le suivi GPS pour économiser la batterie. Désactivez l\'optimisation batterie pour cette app afin d\'éviter les coupures.</string>
 
     <string name="offline_area_instructions">Déplacez et zoomez la carte pour cadrer la zone à rendre disponible hors-ligne, puis choisissez la plage de zoom (plus le zoom max est élevé, plus le téléchargement est volumineux).</string>
@@ -71,6 +69,8 @@
     <string name="offline_area_tiles_estimate">≈ %d tuiles à télécharger</string>
     <string name="offline_area_download_done">Téléchargement terminé : la zone est disponible hors-ligne.</string>
     <string name="offline_area_download_error">Erreur : %s</string>
+    <string name="offline_area_confirm_large_download_title">Téléchargement volumineux</string>
+    <string name="offline_area_confirm_large_download_message">Ceci téléchargera environ %d tuiles. Cela peut prendre du temps et consommer un espace de stockage et des données mobiles importants. Continuer ?</string>
 
     <string name="action_delete">Supprimer</string>
     <string name="action_cancel">Annuler</string>
@@ -100,6 +100,8 @@
     <string name="about_license_label">Licence</string>
     <string name="about_license_name">GNU General Public License v3.0 ou ultérieure</string>
     <string name="about_description">Rando GPX est une application libre d\'enregistrement de randonnées, sans dépendance à Google Play Services.</string>
+    <string name="about_data_sources_label">Sources des données</string>
+    <string name="about_data_sources_text">Cartes : © OpenTopoMap (CC-BY-SA), © OpenStreetMap contributors. Correction d\'altitude : tuiles de terrain publiques (AWS Open Data, dérivées de SRTM), affinées par le géoïde EGM96 embarqué hors-ligne.</string>
     <string name="massif_name_hint">Nom du nouveau massif</string>
     <string name="action_add">Ajouter</string>
     <string name="content_desc_delete_massif">Supprimer le massif</string>
