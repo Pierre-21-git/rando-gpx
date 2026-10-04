@@ -10,6 +10,10 @@ import androidx.compose.material.icons.filled.Gavel
 import androidx.compose.material.icons.filled.Hiking
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -17,6 +21,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import fr.pierre.randogpx.BuildConfig
 import fr.pierre.randogpx.R
+import fr.pierre.randogpx.settings.AppSettings
 
 private const val LICENSE_URL = "https://www.gnu.org/licenses/gpl-3.0.html"
 
@@ -24,6 +29,7 @@ private const val LICENSE_URL = "https://www.gnu.org/licenses/gpl-3.0.html"
 @Composable
 fun AboutScreen(onBack: () -> Unit) {
     val context = LocalContext.current
+    var terrainCorrection by remember { mutableStateOf(AppSettings.isTerrainCorrectionEnabled(context)) }
 
     Scaffold(
         topBar = {
@@ -103,6 +109,29 @@ fun AboutScreen(onBack: () -> Unit) {
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+
+            Spacer(Modifier.height(16.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f).padding(end = 12.dp)) {
+                    Text(stringResource(R.string.settings_terrain_correction_title), style = MaterialTheme.typography.bodyMedium)
+                    Text(
+                        stringResource(R.string.settings_terrain_correction_desc),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                Switch(
+                    checked = terrainCorrection,
+                    onCheckedChange = {
+                        terrainCorrection = it
+                        AppSettings.setTerrainCorrectionEnabled(context, it)
+                    }
+                )
+            }
         }
     }
 }

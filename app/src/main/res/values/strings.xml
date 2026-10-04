@@ -104,6 +104,8 @@
     <string name="about_description">Rando GPX is a free, open-source hike-recording app with no dependency on Google Play Services.</string>
     <string name="about_data_sources_label">Data sources</string>
     <string name="about_data_sources_text">Maps: © OpenTopoMap (CC-BY-SA), © OpenStreetMap contributors. Altitude correction: open terrain elevation tiles (AWS Open Data, derived from SRTM), refined with the offline EGM96 geoid.</string>
+    <string name="settings_terrain_correction_title">Terrain elevation correction</string>
+    <string name="settings_terrain_correction_desc">On stop, sends the approximate area of the hike (map tile coordinates, ~10 km) to AWS to refine elevation gain. When off, only GPS altitude with the offline EGM96 geoid is used.</string>
     <string name="massif_name_hint">New mountain range name</string>
     <string name="action_add">Add</string>
     <string name="content_desc_delete_massif">Delete mountain range</string>

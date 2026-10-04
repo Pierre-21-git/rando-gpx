@@ -19,6 +19,7 @@ import fr.pierre.randogpx.R
 import fr.pierre.randogpx.data.AppDatabase
 import fr.pierre.randogpx.data.HikeRepository
 import fr.pierre.randogpx.data.TrackPoint
+import fr.pierre.randogpx.settings.AppSettings
 import java.util.Locale
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -141,8 +142,10 @@ class LocationTrackingService : Service() {
             // que le capteur GPS) si un réseau est disponible à l'arrêt. En son absence,
             // la randonnée garde simplement les stats calculées depuis le GPS ci-dessus —
             // l'utilisateur peut relancer la correction plus tard depuis l'écran détail.
-            val corrector = TerrainElevationCorrector(applicationContext)
-            repository.applyTerrainElevationCorrection(hikeId, corrector::correctElevations)
+            if (AppSettings.isTerrainCorrectionEnabled(applicationContext)) {
+                val corrector = TerrainElevationCorrector(applicationContext)
+                repository.applyTerrainElevationCorrection(hikeId, corrector::correctElevations)
+            }
             _state.update { TrackingState() }
             currentHikeId = null
             // onFinished déclenche une navigation Compose (NavController), qui exige le

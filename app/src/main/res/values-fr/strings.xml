@@ -104,6 +104,8 @@
     <string name="about_description">Rando GPX est une application libre d\'enregistrement de randonnées, sans dépendance à Google Play Services.</string>
     <string name="about_data_sources_label">Sources des données</string>
     <string name="about_data_sources_text">Cartes : © OpenTopoMap (CC-BY-SA), © OpenStreetMap contributors. Correction d\'altitude : tuiles de terrain publiques (AWS Open Data, dérivées de SRTM), affinées par le géoïde EGM96 embarqué hors-ligne.</string>
+    <string name="settings_terrain_correction_title">Correction d\'altitude par le terrain</string>
+    <string name="settings_terrain_correction_desc">À l\'arrêt, envoie la zone approximative de la randonnée (coordonnées de tuiles, ~10 km) à AWS pour affiner le dénivelé. Désactivée, seule l\'altitude GPS avec le géoïde EGM96 hors-ligne est utilisée.</string>
     <string name="massif_name_hint">Nom du nouveau massif</string>
     <string name="action_add">Ajouter</string>
     <string name="content_desc_delete_massif">Supprimer le massif</string>
