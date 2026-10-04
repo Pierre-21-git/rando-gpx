@@ -1,5 +1,6 @@
 package fr.pierre.randogpx.map
 
+import fr.pierre.randogpx.R
 import org.osmdroid.tileprovider.tilesource.ITileSource
 import org.osmdroid.tileprovider.tilesource.TileSourcePolicyException
 import org.osmdroid.util.BoundingBox
@@ -44,7 +45,7 @@ class OfflineTileManager(
         val cacheManager = try {
             CacheManager(mapView)
         } catch (e: TileSourcePolicyException) {
-            callback.onError(e.message ?: "Politique de la source de tuiles incompatible avec le téléchargement hors-ligne")
+            callback.onError(e.message ?: mapView.context.getString(R.string.offline_area_policy_error))
             return
         }
 
@@ -55,7 +56,7 @@ class OfflineTileManager(
             maxZoom,
             object : CacheManager.CacheManagerCallback {
                 override fun onTaskComplete() = callback.onComplete()
-                override fun onTaskFailed(errors: Int) = callback.onError("$errors tuile(s) en échec")
+                override fun onTaskFailed(errors: Int) = callback.onError(mapView.context.getString(R.string.offline_area_tiles_failed, errors))
                 override fun updateProgress(progress: Int, currentZoomLevel: Int, zoomMin: Int, zoomMax: Int) {
                     callback.onProgress(progress, 100)
                 }

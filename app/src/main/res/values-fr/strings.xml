@@ -69,6 +69,8 @@
     <string name="offline_area_tiles_estimate">≈ %d tuiles à télécharger</string>
     <string name="offline_area_download_done">Téléchargement terminé : la zone est disponible hors-ligne.</string>
     <string name="offline_area_download_error">Erreur : %s</string>
+    <string name="offline_area_policy_error">La politique de la source de tuiles interdit le téléchargement hors-ligne</string>
+    <string name="offline_area_tiles_failed">%1$d tuile(s) en échec</string>
     <string name="offline_area_confirm_large_download_title">Téléchargement volumineux</string>
     <string name="offline_area_confirm_large_download_message">Ceci téléchargera environ %d tuiles. Cela peut prendre du temps et consommer un espace de stockage et des données mobiles importants. Continuer ?</string>
 

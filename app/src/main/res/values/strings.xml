@@ -69,6 +69,8 @@
     <string name="offline_area_tiles_estimate">≈ %d tiles to download</string>
     <string name="offline_area_download_done">Download complete: the area is now available offline.</string>
     <string name="offline_area_download_error">Error: %s</string>
+    <string name="offline_area_policy_error">Tile source policy does not allow offline download</string>
+    <string name="offline_area_tiles_failed">%1$d tile(s) failed</string>
     <string name="offline_area_confirm_large_download_title">Large download</string>
     <string name="offline_area_confirm_large_download_message">This will download about %d tiles. This may take a while and use significant storage and mobile data. Continue?</string>
 
