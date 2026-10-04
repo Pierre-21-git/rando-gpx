@@ -1,0 +1,1 @@
+Ajout d'un réglage pour désactiver la correction d'altitude en ligne (activée par défaut) et correction des messages d'erreur de téléchargement hors-ligne non traduits.

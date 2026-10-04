@@ -1,0 +1,1 @@
+Added a setting to turn off the online terrain elevation correction (on by default), and fixed untranslated offline-download error messages.
