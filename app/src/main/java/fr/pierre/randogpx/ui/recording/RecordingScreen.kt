@@ -6,13 +6,17 @@ import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.content.pm.PackageManager
+import android.location.Location
+import android.location.LocationManager
 import android.os.Build
 import android.os.IBinder
 import android.os.PowerManager
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.PlayArrow
@@ -22,6 +26,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -164,28 +169,59 @@ fun RecordingScreen(
                     outlinePaint.color = fr.pierre.randogpx.ui.theme.TrackColorArgb
                 }
             }
-            AndroidView(
-                modifier = Modifier.weight(1f).fillMaxWidth().clipToBounds(),
-                factory = { ctx ->
-                    MapView(ctx).apply {
-                        setTileSource(OsmdroidConfigurator.openTopoMapSource)
-                        setMultiTouchControls(true)
-                        controller.setZoom(15.0)
-                        overlays.add(trackPolyline)
-                        overlays.add(OsmdroidConfigurator.copyrightOverlay(ctx))
+            // Sans fix GPS, osmdroid reste centré sur (0, 0) au zoom 15 : un carré bleu
+            // d'océan. On se cale donc d'abord sur la dernière position connue du système,
+            // ou à défaut sur une vue large, en attendant le premier vrai point.
+            val lastKnownLocation = remember(hasLocationPermission) {
+                if (hasLocationPermission) lastKnownLocation(context) else null
+            }
+            val mapCentered = remember { booleanArrayOf(false) }
+            Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
+                AndroidView(
+                    modifier = Modifier.fillMaxSize().clipToBounds(),
+                    factory = { ctx ->
+                        MapView(ctx).apply {
+                            setTileSource(OsmdroidConfigurator.openTopoMapSource)
+                            setMultiTouchControls(true)
+                            controller.setZoom(WORLD_ZOOM)
+                            overlays.add(trackPolyline)
+                            overlays.add(OsmdroidConfigurator.copyrightOverlay(ctx))
+                        }
+                    },
+                    update = { mapView ->
+                        if (trackPoints.isNotEmpty()) {
+                            trackPolyline.setPoints(trackPoints.map { GeoPoint(it.lat, it.lon) })
+                            mapView.invalidate()
+                        }
+                        val location = trackingState.lastLocation
+                        if (location != null) {
+                            val point = GeoPoint(location.latitude, location.longitude)
+                            if (mapView.zoomLevelDouble < TRACKING_ZOOM) mapView.controller.setZoom(TRACKING_ZOOM)
+                            mapView.controller.animateTo(point)
+                            mapCentered[0] = true
+                        } else if (!mapCentered[0] && lastKnownLocation != null) {
+                            mapView.controller.setZoom(TRACKING_ZOOM)
+                            mapView.controller.setCenter(
+                                GeoPoint(lastKnownLocation.latitude, lastKnownLocation.longitude)
+                            )
+                            mapCentered[0] = true
+                        }
                     }
-                },
-                update = { mapView ->
-                    if (trackPoints.isNotEmpty()) {
-                        trackPolyline.setPoints(trackPoints.map { GeoPoint(it.lat, it.lon) })
-                        mapView.invalidate()
-                    }
-                    trackingState.lastLocation?.let { location ->
-                        val point = GeoPoint(location.latitude, location.longitude)
-                        mapView.controller.animateTo(point)
-                    }
+                )
+                if (trackingState.isRecording && trackingState.lastLocation == null) {
+                    Text(
+                        stringResourceCompat(R.string.recording_waiting_for_gps),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier
+                            .align(Alignment.TopCenter)
+                            .padding(12.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.9f))
+                            .padding(horizontal = 12.dp, vertical = 6.dp)
+                    )
                 }
-            )
+            }
 
             // --- Stats live ---
             Row(
@@ -265,7 +301,10 @@ fun RecordingScreen(
                         },
                         modifier = Modifier.weight(1f)
                     ) {
-                        Icon(Icons.Default.Pause, contentDescription = null)
+                        Icon(
+                            if (trackingState.isPaused) Icons.Default.PlayArrow else Icons.Default.Pause,
+                            contentDescription = null
+                        )
                         Spacer(Modifier.width(4.dp))
                         Text(
                             if (trackingState.isPaused)
@@ -287,7 +326,28 @@ fun RecordingScreen(
         }
     }
 
-    if (showStopConfirmation) {
+    if (showStopConfirmation && trackingState.pointCount == 0) {
+        // Aucun point GPS reçu (démarrage à l'intérieur, pas de fix...) : une randonnée
+        // vide n'a aucun intérêt dans l'historique, on propose plutôt de l'abandonner.
+        AlertDialog(
+            onDismissRequest = { showStopConfirmation = false },
+            title = { Text(stringResourceCompat(R.string.dialog_discard_empty_hike_title)) },
+            text = { Text(stringResourceCompat(R.string.dialog_discard_empty_hike_message)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    showStopConfirmation = false
+                    viewModel.discardHike(onBack)
+                }) {
+                    Text(stringResourceCompat(R.string.action_discard), color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showStopConfirmation = false }) {
+                    Text(stringResourceCompat(R.string.action_keep_recording))
+                }
+            }
+        )
+    } else if (showStopConfirmation) {
         AlertDialog(
             onDismissRequest = { showStopConfirmation = false },
             title = { Text(stringResourceCompat(R.string.dialog_stop_recording_title)) },
@@ -363,6 +423,28 @@ private fun stringResourceCompat(id: Int): String =
 @Composable
 private fun stringResourceCompat(id: Int, vararg formatArgs: Any): String =
     androidx.compose.ui.res.stringResource(id, *formatArgs)
+
+private const val WORLD_ZOOM = 3.0
+private const val TRACKING_ZOOM = 15.0
+
+/**
+ * Dernière position mémorisée par le système (n'allume pas le GPS), la plus récente
+ * parmi les fournisseurs disponibles. Null si aucune n'est connue.
+ */
+private fun lastKnownLocation(context: Context): Location? {
+    if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) !=
+        PackageManager.PERMISSION_GRANTED
+    ) return null
+    val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+    return try {
+        listOf(LocationManager.GPS_PROVIDER, LocationManager.NETWORK_PROVIDER, LocationManager.PASSIVE_PROVIDER)
+            .filter { locationManager.isProviderEnabled(it) }
+            .mapNotNull { locationManager.getLastKnownLocation(it) }
+            .maxByOrNull { it.time }
+    } catch (e: SecurityException) {
+        null
+    }
+}
 
 /** Placeholder utilisé tant que le service n'est pas encore lié (évite un crash de collectAsState). */
 private fun MutableStateFlowPlaceholder() =

@@ -86,6 +86,11 @@
     <string name="dialog_delete_hike_message">This will permanently remove the hike and its recorded track. This cannot be undone.</string>
     <string name="dialog_stop_recording_title">Stop recording?</string>
     <string name="dialog_stop_recording_message">The hike will be saved with the points collected so far.</string>
+    <string name="recording_waiting_for_gps">Waiting for GPS signal…</string>
+    <string name="dialog_discard_empty_hike_title">No GPS point recorded</string>
+    <string name="dialog_discard_empty_hike_message">No position has been received yet. Discard this hike?</string>
+    <string name="action_discard">Discard</string>
+    <string name="action_keep_recording">Keep recording</string>
     <string name="dialog_leave_recording_title">Leave the recording screen?</string>
     <string name="dialog_leave_recording_message">Recording will keep running in the background. You can come back to this screen anytime to stop it.</string>
     <string name="action_leave">Leave</string>

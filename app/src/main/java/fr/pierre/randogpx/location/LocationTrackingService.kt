@@ -156,6 +156,27 @@ class LocationTrackingService : Service() {
         }
     }
 
+    /**
+     * Abandonne l'enregistrement en cours sans le sauvegarder (typiquement : aucun fix GPS
+     * obtenu, la randonnée n'aurait aucun point). Les points éventuels sont supprimés avec
+     * elle par la cascade de la clé étrangère.
+     */
+    fun discardRecording(onDiscarded: () -> Unit) {
+        locationManager.removeUpdates(locationListener)
+        barometerHelper?.stop()
+        notificationTickerJob?.cancel()
+        notificationTickerJob = null
+        val hikeId = currentHikeId ?: return
+        scope.launch {
+            repository.deleteHike(hikeId)
+            _state.update { TrackingState() }
+            currentHikeId = null
+            withContext(Dispatchers.Main) {
+                onDiscarded()
+            }
+        }
+    }
+
     private fun requestLocationUpdates() {
         // Intervalle : 5s / 5m, ajustable. Sur du GPS pur (pas de Fused), on privilégie
         // GPS_PROVIDER explicitement plutôt que NETWORK_PROVIDER pour la précision terrain.

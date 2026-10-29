@@ -63,4 +63,8 @@ class RecordingViewModel(private val repository: HikeRepository) : ViewModel() {
     fun stopHike(onFinished: (hikeId: Long) -> Unit) {
         _boundService.value?.stopRecording(onFinished)
     }
+
+    fun discardHike(onDiscarded: () -> Unit) {
+        _boundService.value?.discardRecording(onDiscarded)
+    }
 }
