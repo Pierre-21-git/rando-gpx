@@ -14,6 +14,7 @@ import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
+import com.github.mikephil.charting.formatter.ValueFormatter
 import fr.pierre.randogpx.data.HikeRepository
 import fr.pierre.randogpx.data.TrackPoint
 
@@ -26,6 +27,11 @@ fun ElevationChart(points: List<TrackPoint>, modifier: Modifier = Modifier) {
     if (points.size < 2) return
 
     val entries = remember(points) { buildElevationEntries(points) }
+    // Seuls les points le plus bas et le plus haut sont annotés : un libellé par point
+    // s'empile illisiblement autour des sommets dès que le tracé est un peu dense.
+    val labeledEntries = remember(entries) {
+        setOfNotNull(entries.minByOrNull { it.y }, entries.maxByOrNull { it.y })
+    }
     // MPAndroidChart est une vue Android classique, pas liée au thème Material3 : sans ça,
     // ses libellés d'axes gardent leur couleur par défaut (noir), invisibles sur fond sombre
     // en mode nuit puisque le graphique lui-même n'a pas de fond opaque.
@@ -49,10 +55,19 @@ fun ElevationChart(points: List<TrackPoint>, modifier: Modifier = Modifier) {
             chart.xAxis.gridColor = gridColor
             chart.axisLeft.textColor = labelColor
             chart.axisLeft.gridColor = gridColor
+            // Par défaut MPAndroidChart n'affiche plus aucune valeur au-delà de 100 points ;
+            // comme on n'en annote que deux, on lève cette limite pour toujours les montrer.
+            chart.setMaxVisibleValueCount(Int.MAX_VALUE)
             val dataSet = LineDataSet(entries, "Altitude (m)").apply {
                 setDrawCircles(false)
                 lineWidth = 2f
                 setDrawFilled(true)
+                valueTextColor = labelColor
+                valueTextSize = 11f
+                valueFormatter = object : ValueFormatter() {
+                    override fun getPointLabel(entry: Entry?): String =
+                        if (entry != null && entry in labeledEntries) "%.0f m".format(entry.y) else ""
+                }
             }
             chart.data = LineData(dataSet)
             chart.invalidate()
