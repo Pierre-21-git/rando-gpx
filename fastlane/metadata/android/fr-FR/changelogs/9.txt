@@ -1,0 +1,1 @@
+Profil d'altitude des GPX importés corrigé (fin de trace plus trop haute), graphique plus lisible, carte et message d'attente avant le premier signal GPS, possibilité d'abandonner une randonnée sans aucun point, notification retirée à la fin de l'enregistrement.

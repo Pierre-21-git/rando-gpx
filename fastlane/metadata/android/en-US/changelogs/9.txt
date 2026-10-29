@@ -1,0 +1,1 @@
+Fixed the elevation profile of imported GPX files (end of track no longer too high), more readable chart, map and waiting message before the first GPS fix, option to discard a hike with no points, notification removed when recording ends.
