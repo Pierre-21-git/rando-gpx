@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import fr.pierre.randogpx.BuildConfig
 import fr.pierre.randogpx.R
@@ -80,11 +81,19 @@ fun AboutScreen(onBack: () -> Unit) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(stringResource(R.string.about_license_label), style = MaterialTheme.typography.bodyMedium)
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                // Sur un écran étroit, le nom de la licence occupe toute la largeur restante
+                // et venait se coller au libellé : espace minimal garanti + retour à la ligne.
+                Spacer(Modifier.width(16.dp))
+                Row(
+                    modifier = Modifier.weight(1f, fill = false),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Text(
                         stringResource(R.string.about_license_name),
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.primary
+                        color = MaterialTheme.colorScheme.primary,
+                        textAlign = TextAlign.End,
+                        modifier = Modifier.weight(1f, fill = false)
                     )
                     Spacer(Modifier.width(6.dp))
                     Icon(
