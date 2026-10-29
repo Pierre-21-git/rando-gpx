@@ -131,8 +131,9 @@ fun RecordingScreen(
                 viewModel.onServiceDisconnected()
             }
         }
+        // Simple liaison : le service ne passe au premier plan qu'au démarrage d'un
+        // enregistrement (voir LocationTrackingService.startRecording).
         val intent = Intent(context, LocationTrackingService::class.java)
-        context.startForegroundService(intent)
         context.bindService(intent, connection, Context.BIND_AUTO_CREATE)
 
         onDispose {

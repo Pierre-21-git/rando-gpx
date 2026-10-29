@@ -94,6 +94,9 @@ class LocationTrackingService : Service() {
 
     /** Démarre un nouvel enregistrement. [hikeName] est un nom par défaut, éditable ensuite. */
     fun startRecording(hikeName: String) {
+        // Le service n'est que lié tant qu'on n'enregistre pas : il ne devient "démarré" et
+        // de premier plan (notification) qu'ici, pour survivre au départ de l'écran.
+        startForegroundService(Intent(this, LocationTrackingService::class.java))
         gpsFilter.reset()
         isPaused = false
         recordingStartTime = System.currentTimeMillis()
@@ -151,6 +154,7 @@ class LocationTrackingService : Service() {
             // onFinished déclenche une navigation Compose (NavController), qui exige le
             // thread principal : cette coroutine tourne sur Dispatchers.IO (voir `scope`).
             withContext(Dispatchers.Main) {
+                leaveForeground()
                 onFinished(hikeId)
             }
         }
@@ -172,9 +176,19 @@ class LocationTrackingService : Service() {
             _state.update { TrackingState() }
             currentHikeId = null
             withContext(Dispatchers.Main) {
+                leaveForeground()
                 onDiscarded()
             }
         }
+    }
+
+    /**
+     * Fin d'enregistrement : retire la notification et annule le démarrage fait dans
+     * [startRecording]. Le service reste en vie tant que l'écran y est lié, puis s'arrête.
+     */
+    private fun leaveForeground() {
+        stopForeground(STOP_FOREGROUND_REMOVE)
+        stopSelf()
     }
 
     private fun requestLocationUpdates() {
