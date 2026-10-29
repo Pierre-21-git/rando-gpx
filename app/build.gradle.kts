@@ -24,7 +24,12 @@ android {
             applicationIdSuffix = ".debug"
         }
         release {
-            isMinifyEnabled = false
+            // R8 : suppression du code et des ressources inutilisés, obfuscation (demandé
+            // par F-Droid). Aucune règle supplémentaire n'a été nécessaire : Room, Compose et
+            // les autres AndroidX embarquent les leurs, osmdroid et MPAndroidChart n'utilisent
+            // pas de réflexion sur notre code (vérifié sur émulateur, voir proguard-rules.pro).
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             // Signature avec la clé debug (auto-générée par AGP) uniquement pour pouvoir
             // installer ce build release localement à des fins de comparaison/test. À
