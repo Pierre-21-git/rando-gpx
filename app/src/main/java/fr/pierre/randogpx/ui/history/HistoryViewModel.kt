@@ -166,12 +166,12 @@ class HistoryViewModel(private val repository: HikeRepository) : ViewModel() {
         // L'altitude brute d'un GPX importé est aussi bruitée que celle d'un enregistrement
         // live (voire plus, selon l'appareil/l'app d'origine) : on lui applique le même filtre
         // anti-bruit que LocationTrackingService, plutôt que de la sommer telle quelle dans le
-        // calcul de dénivelé.
-        val elevationFilter = GpsFilter()
+        // calcul de dénivelé. Lissage centré (trace complète), voir GpsFilter.smoothCompleteTrack.
+        val smoothedElevations = GpsFilter()
+            .smoothCompleteTrack(track.points.mapNotNull { it.elevation })
+            .iterator()
         val points = track.points.map {
-            val smoothed = it.elevation?.let { ele ->
-                elevationFilter.processAltitude(altitude = ele, hasAltitude = true, verticalAccuracyMeters = null)
-            }
+            val smoothed = it.elevation?.let { smoothedElevations.next() }
             TrackPoint(
                 hikeId = 0,
                 lat = it.lat,

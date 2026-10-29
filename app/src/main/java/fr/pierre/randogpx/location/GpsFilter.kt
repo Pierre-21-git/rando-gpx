@@ -61,6 +61,31 @@ class GpsFilter(
         }
     }
 
+    /**
+     * Variante pour une trace déjà complète (import GPX), où tous les points sont connus
+     * d'avance. La moyenne de [processAltitude] ne porte que sur les mesures passées : en
+     * temps réel on n'a pas mieux, mais elle retarde l'altitude de (N-1)/2 points, ce qui
+     * sur une longue descente avec des points espacés laisse la fin du profil des dizaines
+     * de mètres trop haute. Ici la fenêtre est centrée sur chaque point (même largeur
+     * maximale), et se rétrécit symétriquement aux extrémités pour que le premier et le
+     * dernier point gardent leur altitude d'origine. Même seuil anti-bruit ensuite.
+     */
+    fun smoothCompleteTrack(altitudes: List<Double>): List<Double> {
+        val halfWindow = (windowSize - 1) / 2
+        var last: Double? = null
+        return altitudes.indices.map { i ->
+            val half = minOf(halfWindow, i, altitudes.lastIndex - i)
+            val smoothed = altitudes.subList(i - half, i + half + 1).average()
+            val previous = last
+            if (previous == null || abs(smoothed - previous) >= minAltitudeDeltaMeters) {
+                last = smoothed
+                smoothed
+            } else {
+                previous
+            }
+        }
+    }
+
     fun reset() {
         altitudeWindow.clear()
         lastAcceptedAltitude = null
