@@ -1,0 +1,1 @@
+Application plus légère : la version publiée est désormais optimisée avec R8 (code et ressources inutilisés retirés). Aucun changement fonctionnel.

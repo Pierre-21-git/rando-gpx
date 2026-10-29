@@ -1,0 +1,1 @@
+Smaller app: the release build is now optimized with R8 (unused code and resources removed). No functional change.
