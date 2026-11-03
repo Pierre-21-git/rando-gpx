@@ -12,8 +12,8 @@ android {
         applicationId = "fr.pierre.randogpx"
         minSdk = 26 // Android 8.0, nécessaire pour les Foreground Service types modernes
         targetSdk = 35
-        versionCode = 9
-        versionName = "0.4.4"
+        versionCode = 10
+        versionName = "0.4.5"
     }
 
     buildTypes {

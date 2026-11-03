@@ -1,0 +1,1 @@
+App icon now shown in F-Droid, centered text on the empty hike list.

@@ -1,0 +1,1 @@
+Logo de l'application affiché dans F-Droid, texte centré sur la liste de randonnées vide.
